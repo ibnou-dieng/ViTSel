@@ -6,12 +6,12 @@ ViTSel is an R-based software to visualize results of multi-environment, multi-t
 
 Authors:
 
-Ibnou Dieng (IITA) - ORCID: 0000-0002-1051-9143
+Ibnou Dieng (IITA, Nigeria) - ORCID: 0000-0002-1051-9143
 
-Francisco Rodríguez (CIMMYT)
+Francisco Rodríguez (CIMMYT, Mexico)
 
-Gregorio Alvarado (CIMMYT)
+Gregorio Alvarado (CIMMYT, Mexico)
 
-Ángela Pacheco (CIMMYT)
+Ángela Pacheco (CIMMYT, Mexico)
 
-Juan Burgueño (CIMMYT) - ORCID: 0000-0002-1468-4867
+Juan Burgueño (CIMMYT, Mexico) - ORCID: 0000-0002-1468-4867

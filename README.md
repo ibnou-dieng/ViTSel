@@ -1,7 +1,7 @@
 ViTSel
 ================
 
-## VitSel: Visualization Tool for Selection
+## Visualization Tool for Selection
 
 A decision-support tool to ease selection by visualizing results of a
 multi-environmental, multi-trait analysis

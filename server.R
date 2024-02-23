@@ -11,15 +11,14 @@ library(huxtable)
 library(tidyverse)
 
 server <- function (input, output, session) {
-  
   ########################################################################
-  # Import data 
+  # Import data
   ########################################################################
   
   # Upload example file
   
-  BLUPS_Example <- read_excel("data/Example.xlsx","BLUPS")
-
+  BLUPS_Example <- read_excel("data/Example.xlsx", "BLUPS")
+  
   output$dwlExample <- downloadHandler(
     filename = function() {
       paste0("Example", ".xlsx")
@@ -29,14 +28,14 @@ server <- function (input, output, session) {
     }
   )
   
-
+  
   dataBLUPS <- reactive({
     req(input$fileUp)
     dfile <- input$fileUp
     if (!is.null(dfile) && input$selSheetBLUPS %in% sheets()) {
       dBLUPS <- read_excel(dfile$datapath, sheet = input$selSheetBLUPS)
       dBLUPS %<>%
-        filter_all(any_vars(!is.na(.))) 
+        filter_all(any_vars(!is.na(.)))
     } else {
       return()
     }
@@ -45,11 +44,11 @@ server <- function (input, output, session) {
   output$fileUploaded <- reactive({
     return(!is.null(input$fileUp))
   })
-  outputOptions(output, 'fileUploaded', suspendWhenHidden=FALSE)
+  outputOptions(output, 'fileUploaded', suspendWhenHidden = FALSE)
   
   sheets <- reactive({
     if (!is.null(input$fileUp)) {
-      return(excel_sheets(path = input$fileUp$datapath))  
+      return(excel_sheets(path = input$fileUp$datapath))
     } else {
       return(NULL)
     }
@@ -68,11 +67,9 @@ server <- function (input, output, session) {
     dataBLUPSAll <- dataBLUPS()
     
     dNames <- names(dataBLUPSAll)
-    selectInput(
-      'InputGenotype',
-      'Select Genotype',
-      choices = dNames
-    )
+    selectInput('InputGenotype',
+                'Select Genotype',
+                choices = dNames)
   })
   
   observeEvent(input$InputGenotype, {
@@ -81,8 +78,10 @@ server <- function (input, output, session) {
     req(input$InputGenotype)
     dataBLUPSAll <- dataBLUPS()
     dNames <- names(dataBLUPSAll)
-    updateSelectInput(session, "InputEnvironment", "Select Environment",
-                      choices = dNames[dNames!=input$InputGenotype])
+    updateSelectInput(session,
+                      "InputEnvironment",
+                      "Select Environment",
+                      choices = dNames[dNames != input$InputGenotype])
   })
   
   output$outTraitAnalysis <- renderUI({
@@ -93,8 +92,9 @@ server <- function (input, output, session) {
     dataBLUPSAll <- dataBLUPS()
     Genotype <- input$InputGenotype
     Environment <- input$InputEnvironment
-    TraitsAll <- sort(setdiff(names(dataBLUPSAll), c(Environment, Genotype)))
-    dataBLUPSAll <- dataBLUPSAll %>% 
+    TraitsAll <-
+      sort(setdiff(names(dataBLUPSAll), c(Environment, Genotype)))
+    dataBLUPSAll <- dataBLUPSAll %>%
       select(all_of(TraitsAll))
     selectInput(
       'InputAnalysisTraits',
@@ -109,16 +109,34 @@ server <- function (input, output, session) {
   
   observeEvent(
     c(
-      input$fileUp, input$selSheetBLUPS,
-      input$InputGenotype, input$InputEnvironment, input$InputAnalysisTraits, 
-      input$InputEnvChecks, input$InputChecks, input$InputHighTraitsChecks, input$InputLowTraitsChecks, input$InputRangeTraitsChecks, #input$shuklaChecks, 
-      input$InputEnvSpecific, input$InputHighTraits, input$InputLowTraits, input$InputRangeTraits, input$TraitSlider, input$TraitSliderR, #input$shuklaSpecific,
-      input$InputEnvRankIndex, input$InputRankTraits, 
-      input$InputEnvBaseIndex, input$InputBaseTraits
-    ), {
+      input$fileUp,
+      input$selSheetBLUPS,
+      input$InputGenotype,
+      input$InputEnvironment,
+      input$InputAnalysisTraits,
+      input$InputEnvChecks,
+      input$InputChecks,
+      input$InputHighTraitsChecks,
+      input$InputLowTraitsChecks,
+      input$InputRangeTraitsChecks,
+      #input$shuklaChecks,
+      input$InputEnvSpecific,
+      input$InputHighTraits,
+      input$InputLowTraits,
+      input$InputRangeTraits,
+      input$TraitSlider,
+      input$TraitSliderR,
+      #input$shuklaSpecific,
+      input$InputEnvRankIndex,
+      input$InputRankTraits,
+      input$InputEnvBaseIndex,
+      input$InputBaseTraits
+    ),
+    {
       hideAll$clearAll <- TRUE
-    })
-
+    }
+  )
+  
   output$outEnvSpecific <- renderUI({
     req(input$fileUp)
     req(input$selSheetBLUPS)
@@ -131,23 +149,24 @@ server <- function (input, output, session) {
     Env <- unique(dataBLUPSAll$Environment)
     
     
-    if("OVERALL" %in% Env) {
-      if(length(Env)>2){
+    if ("OVERALL" %in% Env) {
+      if (length(Env) > 2) {
         Env <- sort(Env[Env != "OVERALL"])
-        selectInput('InputEnvSpecific',
-                    'Environment',
-                    choices = list("OVERALL", 'Environments'=Env)
+        selectInput(
+          'InputEnvSpecific',
+          'Environment',
+          choices = list("OVERALL", 'Environments' = Env)
         )
       } else {
-        selectInput('InputEnvSpecific', 'Environment', choices=Env)
+        selectInput('InputEnvSpecific', 'Environment', choices = Env)
       }
       
     } else {
-      selectInput('InputEnvSpecific', 'Environment', choices=Env)
+      selectInput('InputEnvSpecific', 'Environment', choices = Env)
     }
     
   })
-
+  
   output$outSliderSpecific <- renderUI({
     req(input$fileUp)
     req(input$selSheetBLUPS)
@@ -166,14 +185,16 @@ server <- function (input, output, session) {
     myEnvironment <- myEnvironment()
     dataBLUPSAll <- dataBLUPS()
     dataBLUPS <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       filter(Environment == myEnvironment) %>%
       select(Environment, Genotype, all_of(currenttraits)) %>%
       arrange(Genotype)
-    currenttraits <- currenttraits[colSums(is.na(dataBLUPS[, currenttraits]))!=nrow(dataBLUPS[, currenttraits])] 
+    currenttraits <-
+      currenttraits[colSums(is.na(dataBLUPS[, currenttraits])) != nrow(dataBLUPS[, currenttraits])]
     selectInput(
       'InputHighTraits',
-      paste0("Trait(s)",": ","higher values"),
+      paste0("Trait(s)", ": ", "higher values"),
       choices = currenttraits,
       multiple = TRUE
     )
@@ -197,17 +218,19 @@ server <- function (input, output, session) {
     myEnvironment <- myEnvironment()
     dataBLUPSAll <- dataBLUPS()
     dataBLUPS <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       filter(Environment == myEnvironment) %>%
       select(Environment, Genotype, all_of(currenttraits)) %>%
       arrange(Genotype)
-    currenttraits <- currenttraits[colSums(is.na(dataBLUPS[, currenttraits]))!=nrow(dataBLUPS[, currenttraits])] 
-    if (!is.null(currenttraithigh)){
+    currenttraits <-
+      currenttraits[colSums(is.na(dataBLUPS[, currenttraits])) != nrow(dataBLUPS[, currenttraits])]
+    if (!is.null(currenttraithigh)) {
       currenttraits <- sort(setdiff(currenttraits, currenttraithigh))
     }
     selectInput(
       'InputLowTraits',
-      paste0("Trait(s)",": ","lower values"),
+      paste0("Trait(s)", ": ", "lower values"),
       choices = currenttraits,
       multiple = TRUE
     )
@@ -218,7 +241,8 @@ server <- function (input, output, session) {
     req(input$selSheetBLUPS)
     req(input$InputEnvSpecific)
     req(input$InputAnalysisTraits)
-    req(!is.null(input$InputHighTraits) | !is.null(input$InputLowTraits))
+    req(!is.null(input$InputHighTraits) |
+          !is.null(input$InputLowTraits))
     req(input$InputGenotype)
     req(input$InputEnvironment)
     Genotype <- input$InputGenotype
@@ -227,14 +251,16 @@ server <- function (input, output, session) {
     currenttraits <- input$InputAnalysisTraits
     currenttraithigh <- input$InputHighTraits
     currenttraitlow <- input$InputLowTraits
-    currenttraithighlow <- sort(c(currenttraithigh, currenttraitlow))
+    currenttraithighlow <-
+      sort(c(currenttraithigh, currenttraitlow))
     dataBLUPSAll <- dataBLUPS()
     myEnvironment <- reactive({
       currentenv
     })
     myEnvironment <- myEnvironment()
     dataBLUPS <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       filter(Environment == myEnvironment) %>%
       select(Environment, Genotype, all_of(currenttraits)) %>%
       arrange(Genotype)
@@ -242,19 +268,28 @@ server <- function (input, output, session) {
     for (i in 1:length(currenttraithighlow)) {
       trait <- dataBLUPS %>%
         pull(currenttraithighlow[i])
-      summaryDat <- rbind(summaryDat,data.frame(Trait=currenttraithighlow[i],
-                                                Min=min(trait,na.rm=TRUE),
-                                                Mean=mean(trait,na.rm=TRUE),
-                                                Max=max(trait,na.rm=TRUE),
-                                                stringsAsFactors = FALSE))
+      summaryDat <-
+        rbind(
+          summaryDat,
+          data.frame(
+            Trait = currenttraithighlow[i],
+            Min = min(trait, na.rm =
+                        TRUE),
+            Mean = mean(trait, na.rm =
+                          TRUE),
+            Max = max(trait, na.rm =
+                        TRUE),
+            stringsAsFactors = FALSE
+          )
+        )
     }
     lapply(1:nrow(summaryDat), function(i) {
       sliderInput(
         paste0('TraitSlider', i),
         currenttraithighlow[i],
-        min = round(summaryDat[i, 2],2),
-        max = round(summaryDat[i, 4],2),
-        value = round(summaryDat[i, 3],2),
+        min = round(summaryDat[i, 2], 2),
+        max = round(summaryDat[i, 4], 2),
+        value = round(summaryDat[i, 3], 2),
         step = 0.01
       )
     })
@@ -281,15 +316,18 @@ server <- function (input, output, session) {
     myEnvironment <- myEnvironment()
     dataBLUPSAll <- dataBLUPS()
     dataBLUPS <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       filter(Environment == myEnvironment) %>%
       select(Environment, Genotype, all_of(currenttraits)) %>%
       arrange(Genotype)
-    currenttraits <- currenttraits[colSums(is.na(dataBLUPS[, currenttraits]))!=nrow(dataBLUPS[, currenttraits])] 
-    currenttraits <- sort(setdiff(currenttraits, currenttraithighlow))
+    currenttraits <-
+      currenttraits[colSums(is.na(dataBLUPS[, currenttraits])) != nrow(dataBLUPS[, currenttraits])]
+    currenttraits <-
+      sort(setdiff(currenttraits, currenttraithighlow))
     selectInput(
       'InputRangeTraits',
-      paste0("Trait(s)",": ","values within range"),
+      paste0("Trait(s)", ": ", "values within range"),
       choices = currenttraits,
       multiple = TRUE
     )
@@ -314,7 +352,8 @@ server <- function (input, output, session) {
     })
     myEnvironment <- myEnvironment()
     dataBLUPS <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       filter(Environment == myEnvironment) %>%
       select(Environment, Genotype, all_of(currenttraitrange)) %>%
       arrange(Genotype)
@@ -322,19 +361,28 @@ server <- function (input, output, session) {
     for (i in 1:length(currenttraitrange)) {
       trait <- dataBLUPS %>%
         pull(currenttraitrange[i])
-      summaryDat <- rbind(summaryDat,data.frame(Trait=currenttraitrange[i],
-                                                Min=min(trait,na.rm=TRUE),
-                                                Mean=mean(trait,na.rm=TRUE),
-                                                Max=max(trait,na.rm=TRUE),
-                                                stringsAsFactors = FALSE))
+      summaryDat <-
+        rbind(
+          summaryDat,
+          data.frame(
+            Trait = currenttraitrange[i],
+            Min = min(trait, na.rm =
+                        TRUE),
+            Mean = mean(trait, na.rm =
+                          TRUE),
+            Max = max(trait, na.rm =
+                        TRUE),
+            stringsAsFactors = FALSE
+          )
+        )
     }
     lapply(1:nrow(summaryDat), function(i) {
       sliderInput(
         paste0('TraitSliderR', i),
         currenttraitrange[i],
-        min = round(summaryDat[i, 2],2),
-        max = round(summaryDat[i, 4],2),
-        value = round(c(summaryDat[i, 2], summaryDat[i, 4]),2),
+        min = round(summaryDat[i, 2], 2),
+        max = round(summaryDat[i, 4], 2),
+        value = round(c(summaryDat[i, 2], summaryDat[i, 4]), 2),
         step = 0.01
       )
     })
@@ -348,25 +396,24 @@ server <- function (input, output, session) {
     Environment <- input$InputEnvironment
     dataBLUPSAll <- dataBLUPS()
     dataBLUPSAll %<>%
-      rename(Environment = all_of(Environment)) 
+      rename(Environment = all_of(Environment))
     Env <- unique(dataBLUPSAll$Environment)
     
-    if("OVERALL" %in% Env) {
-      if(length(Env)>2){
+    if ("OVERALL" %in% Env) {
+      if (length(Env) > 2) {
         Env <- sort(Env[Env != "OVERALL"])
         selectInput('InputEnvChecks',
                     'Environment',
-                    choices = list("OVERALL", 'Environments'=Env)
-        )
+                    choices = list("OVERALL", 'Environments' = Env))
       } else {
-        selectInput('InputEnvChecks', 'Environment', choices=Env)
+        selectInput('InputEnvChecks', 'Environment', choices = Env)
       }
       
     } else {
-      selectInput('InputEnvChecks', 'Environment', choices=Env)
+      selectInput('InputEnvChecks', 'Environment', choices = Env)
     }
   })
-
+  
   output$outInputChecks <- renderUI({
     req(input$fileUp)
     req(input$selSheetBLUPS)
@@ -382,7 +429,8 @@ server <- function (input, output, session) {
     })
     myEnvironment <- myEnvironment()
     dataBLUPS <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       filter(Environment == myEnvironment) %>%
       arrange(Genotype)
     Genotypes <- sort(unique(dataBLUPS$Genotype))
@@ -391,7 +439,7 @@ server <- function (input, output, session) {
                 choices = Genotypes,
                 multiple = TRUE)
   })
-
+  
   output$outtraitSelHighChecks <- renderUI({
     req(input$fileUp)
     req(input$selSheetBLUPS)
@@ -409,14 +457,16 @@ server <- function (input, output, session) {
     myEnvironment <- myEnvironment()
     dataBLUPSAll <- dataBLUPS()
     dataBLUPS <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       filter(Environment == myEnvironment) %>%
       select(Environment, Genotype, all_of(currenttraits)) %>%
       arrange(Genotype)
-    currenttraits <- currenttraits[colSums(is.na(dataBLUPS[, currenttraits]))!=nrow(dataBLUPS[, currenttraits])] 
+    currenttraits <-
+      currenttraits[colSums(is.na(dataBLUPS[, currenttraits])) != nrow(dataBLUPS[, currenttraits])]
     selectInput(
       'InputHighTraitsChecks',
-      paste0("Trait(s)",": ","higher values"),
+      paste0("Trait(s)", ": ", "higher values"),
       choices = currenttraits,
       multiple = TRUE
     )
@@ -440,20 +490,22 @@ server <- function (input, output, session) {
     myEnvironment <- myEnvironment()
     dataBLUPSAll <- dataBLUPS()
     dataBLUPS <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       filter(Environment == myEnvironment) %>%
       select(Environment, Genotype, all_of(currenttraits)) %>%
       arrange(Genotype)
-    currenttraits <- currenttraits[colSums(is.na(dataBLUPS[, currenttraits]))!=nrow(dataBLUPS[, currenttraits])] 
+    currenttraits <-
+      currenttraits[colSums(is.na(dataBLUPS[, currenttraits])) != nrow(dataBLUPS[, currenttraits])]
     currenttraits <- sort(setdiff(currenttraits, currenttraithigh))
     selectInput(
       'InputLowTraitsChecks',
-      paste0("Trait(s)",": ","lower values"),
+      paste0("Trait(s)", ": ", "lower values"),
       choices = currenttraits,
       multiple = TRUE
     )
   })
-
+  
   output$outSliderRangeCheks <- renderUI({
     req(input$fileUp)
     req(input$selSheetBLUPS)
@@ -474,15 +526,18 @@ server <- function (input, output, session) {
     myEnvironment <- myEnvironment()
     dataBLUPSAll <- dataBLUPS()
     dataBLUPS <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       filter(Environment == myEnvironment) %>%
       select(Environment, Genotype, all_of(currenttraits)) %>%
       arrange(Genotype)
-    currenttraits <- currenttraits[colSums(is.na(dataBLUPS[, currenttraits]))!=nrow(dataBLUPS[, currenttraits])] 
-    currenttraits <- sort(setdiff(currenttraits, currenttraithighlow))
+    currenttraits <-
+      currenttraits[colSums(is.na(dataBLUPS[, currenttraits])) != nrow(dataBLUPS[, currenttraits])]
+    currenttraits <-
+      sort(setdiff(currenttraits, currenttraithighlow))
     selectInput(
       'InputRangeTraitsChecks',
-      paste0("Trait(s)",": ","values within range"),
+      paste0("Trait(s)", ": ", "values within range"),
       choices = currenttraits,
       multiple = TRUE
     )
@@ -505,7 +560,8 @@ server <- function (input, output, session) {
     })
     myEnvironment <- myEnvironment()
     dataBLUPS <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       filter(Environment == myEnvironment) %>%
       select(Environment, Genotype, all_of(currenttraitrange)) %>%
       arrange(Genotype)
@@ -514,19 +570,28 @@ server <- function (input, output, session) {
     for (i in 1:length(currenttraitrange)) {
       trait <- dataBLUPS %>%
         pull(currenttraitrange[i])
-      summaryDat <- rbind(summaryDat,data.frame(Trait=currenttraitrange[i],
-                                                Min=min(trait,na.rm=TRUE),
-                                                Mean=mean(trait,na.rm=TRUE),
-                                                Max=max(trait,na.rm=TRUE),
-                                                stringsAsFactors = FALSE))
+      summaryDat <-
+        rbind(
+          summaryDat,
+          data.frame(
+            Trait = currenttraitrange[i],
+            Min = min(trait, na.rm =
+                        TRUE),
+            Mean = mean(trait, na.rm =
+                          TRUE),
+            Max = max(trait, na.rm =
+                        TRUE),
+            stringsAsFactors = FALSE
+          )
+        )
     }
     lapply(1:nrow(summaryDat), function(i) {
       sliderInput(
         paste0('TraitSliderChecksR', i),
         currenttraitrange[i],
-        min = round(summaryDat[i, 2],2),
-        max = round(summaryDat[i, 4],2),
-        value = round(c(summaryDat[i, 2], summaryDat[i, 4]),2),
+        min = round(summaryDat[i, 2], 2),
+        max = round(summaryDat[i, 4], 2),
+        value = round(c(summaryDat[i, 2], summaryDat[i, 4]), 2),
         step = 0.01
       )
     })
@@ -543,19 +608,20 @@ server <- function (input, output, session) {
       rename(Environment = all_of(Environment))
     Env <- unique(dataBLUPSAll$Environment)
     
-    if("OVERALL" %in% Env) {
-      if(length(Env)>2){
+    if ("OVERALL" %in% Env) {
+      if (length(Env) > 2) {
         Env <- sort(Env[Env != "OVERALL"])
-        selectInput('InputEnvRankIndex',
-                    'Environment',
-                    choices = list("OVERALL", 'Environments'=Env)
+        selectInput(
+          'InputEnvRankIndex',
+          'Environment',
+          choices = list("OVERALL", 'Environments' = Env)
         )
       } else {
-        selectInput('InputEnvRankIndex', 'Environment', choices=Env)
+        selectInput('InputEnvRankIndex', 'Environment', choices = Env)
       }
       
     } else {
-      selectInput('InputEnvRankIndex', 'Environment', choices=Env)
+      selectInput('InputEnvRankIndex', 'Environment', choices = Env)
     }
     
   })
@@ -579,14 +645,16 @@ server <- function (input, output, session) {
     myEnvironment <- myEnvironment()
     dataBLUPSAll <- dataBLUPS()
     dataBLUPS <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       filter(Environment == myEnvironment) %>%
       select(Environment, Genotype, all_of(currenttraits)) %>%
       arrange(Genotype)
-    currenttraits <- currenttraits[colSums(is.na(dataBLUPS[, currenttraits]))!=nrow(dataBLUPS[, currenttraits])] 
+    currenttraits <-
+      currenttraits[colSums(is.na(dataBLUPS[, currenttraits])) != nrow(dataBLUPS[, currenttraits])]
     selectInput(
       'InputRankTraitsHigh',
-      paste0("Trait(s)",": ","descending order is desired"),
+      paste0("Trait(s)", ": ", "descending order is desired"),
       choices = currenttraits,
       multiple = TRUE
     )
@@ -613,17 +681,19 @@ server <- function (input, output, session) {
     myEnvironment <- myEnvironment()
     dataBLUPSAll <- dataBLUPS()
     dataBLUPS <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       filter(Environment == myEnvironment) %>%
       select(Environment, Genotype, all_of(currenttraits)) %>%
       arrange(Genotype)
-    currenttraits <- currenttraits[colSums(is.na(dataBLUPS[, currenttraits]))!=nrow(dataBLUPS[, currenttraits])] 
-    if (!is.null(currenttraithigh)){
+    currenttraits <-
+      currenttraits[colSums(is.na(dataBLUPS[, currenttraits])) != nrow(dataBLUPS[, currenttraits])]
+    if (!is.null(currenttraithigh)) {
       currenttraits <- sort(setdiff(currenttraits, currenttraithigh))
     }
     selectInput(
       'InputRankTraitsLow',
-      paste0("Trait(s)",": ","ascending order is desired"),
+      paste0("Trait(s)", ": ", "ascending order is desired"),
       choices = currenttraits,
       multiple = TRUE
     )
@@ -641,19 +711,20 @@ server <- function (input, output, session) {
       rename(Environment = all_of(Environment))
     Env <- unique(dataBLUPSAll$Environment)
     
-    if("OVERALL" %in% Env) {
-      if(length(Env)>2){
+    if ("OVERALL" %in% Env) {
+      if (length(Env) > 2) {
         Env <- sort(Env[Env != "OVERALL"])
-        selectInput('InputEnvBaseIndex',
-                    'Environment',
-                    choices = list("OVERALL", 'Environments'=Env)
+        selectInput(
+          'InputEnvBaseIndex',
+          'Environment',
+          choices = list("OVERALL", 'Environments' = Env)
         )
       } else {
-        selectInput('InputEnvBaseIndex', 'Environment', choices=Env)
+        selectInput('InputEnvBaseIndex', 'Environment', choices = Env)
       }
       
     } else {
-      selectInput('InputEnvBaseIndex', 'Environment', choices=Env)
+      selectInput('InputEnvBaseIndex', 'Environment', choices = Env)
     }
     
   })
@@ -672,14 +743,13 @@ server <- function (input, output, session) {
     EnvironmentBase <- input$InputEnvBaseIndex
     dataBLUPSAll %<>%
       rename(Environment = all_of(Environment)) %>%
-      filter(Environment==EnvironmentBase)
-    currenttraits <- currenttraits[colSums(is.na(dataBLUPSAll[, currenttraits]))!=nrow(dataBLUPSAll[, currenttraits])] 
-    selectInput(
-      'InputBaseTraits',
-      'Trait(s)',
-      choices = currenttraits,
-      multiple = TRUE
-    )
+      filter(Environment == EnvironmentBase)
+    currenttraits <-
+      currenttraits[colSums(is.na(dataBLUPSAll[, currenttraits])) != nrow(dataBLUPSAll[, currenttraits])]
+    selectInput('InputBaseTraits',
+                'Trait(s)',
+                choices = currenttraits,
+                multiple = TRUE)
   })
   
   output$outTraitsBaseIndexSlider <- renderUI({
@@ -695,7 +765,7 @@ server <- function (input, output, session) {
     lapply(1:length(currenttraits), function(i) {
       sliderInput(
         paste0('TraitSliderBaseIndex', i),
-        paste0('Weight',": ",currenttraits[i]),
+        paste0('Weight', ": ", currenttraits[i]),
         min = -5,
         max = 5,
         value = 1,
@@ -704,7 +774,7 @@ server <- function (input, output, session) {
     })
   })
   
-
+  
   output$outseltraitHeat <- renderUI({
     req(input$fileUp)
     req(input$selSheetBLUPS)
@@ -713,7 +783,7 @@ server <- function (input, output, session) {
     selectInput("seltraitHeat", "Trait", choices = currenttraits)
   })
   
-
+  
   output$outseltraitBox <- renderUI({
     req(input$fileUp)
     req(input$selSheetBLUPS)
@@ -721,7 +791,7 @@ server <- function (input, output, session) {
     currenttraits <- input$InputAnalysisTraits
     selectInput("seltraitBox", "Select Trait", choices = currenttraits)
   })
-
+  
   output$outseltraitBiplot <- renderUI({
     req(input$fileUp)
     req(input$selSheetBLUPS)
@@ -743,25 +813,26 @@ server <- function (input, output, session) {
     currenttraitBiplot <- input$seltraitBiplot
     dataBLUPSAll <- dataBLUPS()
     datBLUPSBiplot <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       select(Environment, Genotype, all_of(currenttraitBiplot)) %>%
       arrange(Genotype)
-    missingBLUPS<-datBLUPSBiplot %>%
+    missingBLUPS <- datBLUPSBiplot %>%
       arrange(Environment) %>%
       rename(temp = all_of(currenttraitBiplot)) %>%
       group_by(Genotype) %>%
-      summarize(new=mean(temp, na.rm = TRUE))
+      summarize(new = mean(temp, na.rm = TRUE))
     datBLUPSBiplot %<>%
       left_join(missingBLUPS, by = "Genotype") %>%
       rename(temp = all_of(currenttraitBiplot)) %>%
       mutate(temp = ifelse(is.na(temp), new, temp)) %>%
-      select(-new)%>%
+      select(-new) %>%
       filter(!is.na(temp))
     
     Env <- unique(datBLUPSBiplot$Environment)
     
-    if("OVERALL" %in% Env){
-      if(length(Env)>2) {
+    if ("OVERALL" %in% Env) {
+      if (length(Env) > 2) {
         dTrait <- datBLUPSBiplot %>%
           filter(Environment != "OVERALL") %>%
           arrange(Environment, Genotype) %>%
@@ -779,9 +850,9 @@ server <- function (input, output, session) {
           choix <- 1:4
         }
         selectInput('InputDimX', 'Dimension for the X-axis', choices = choix)
-      } 
+      }
     } else {
-      if(length(Env)>=2) {
+      if (length(Env) >= 2) {
         dTrait <- datBLUPSBiplot %>%
           arrange(Environment, Genotype) %>%
           spread(key = Environment, value = temp) %>%
@@ -799,7 +870,7 @@ server <- function (input, output, session) {
         }
         
         selectInput('InputDimX', 'Dimension for the X-axis', choices = choix)
-      } 
+      }
     }
   })
   
@@ -818,25 +889,26 @@ server <- function (input, output, session) {
     currenttraitBiplot <- input$seltraitBiplot
     dataBLUPSAll <- dataBLUPS()
     datBLUPSBiplot <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       select(Environment, Genotype, all_of(currenttraitBiplot)) %>%
       arrange(Genotype)
-    missingBLUPS<-datBLUPSBiplot %>%
+    missingBLUPS <- datBLUPSBiplot %>%
       arrange(Environment) %>%
       rename(temp = all_of(currenttraitBiplot)) %>%
       group_by(Genotype) %>%
-      summarize(new=mean(temp, na.rm = TRUE))
+      summarize(new = mean(temp, na.rm = TRUE))
     datBLUPSBiplot %<>%
       left_join(missingBLUPS, by = "Genotype") %>%
       rename(temp = all_of(currenttraitBiplot)) %>%
       mutate(temp = ifelse(is.na(temp), new, temp)) %>%
-      select(-new)%>%
+      select(-new) %>%
       filter(!is.na(temp))
     
     Env <- unique(datBLUPSBiplot$Environment)
     
-    if("OVERALL" %in% Env){
-      if(length(Env)>2) {
+    if ("OVERALL" %in% Env) {
+      if (length(Env) > 2) {
         dTrait <- datBLUPSBiplot %>%
           filter(Environment != "OVERALL") %>%
           arrange(Environment, Genotype) %>%
@@ -856,9 +928,9 @@ server <- function (input, output, session) {
         }
         
         selectInput('InputDimY', 'Dimension for the Y-axis', choices = choix)
-      } 
+      }
     } else {
-      if(length(Env)>=2) {
+      if (length(Env) >= 2) {
         dTrait <- datBLUPSBiplot %>%
           arrange(Environment, Genotype) %>%
           spread(key = Environment, value = temp) %>%
@@ -877,7 +949,7 @@ server <- function (input, output, session) {
         }
         
         selectInput('InputDimY', 'Dimension for the Y-axis', choices = choix)
-      } 
+      }
     }
     
   })
@@ -894,62 +966,74 @@ server <- function (input, output, session) {
     currenttraits <- input$InputAnalysisTraits
     dataBLUPSAll <- dataBLUPS()
     dataBLUPSAll %<>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       select(Environment, Genotype, all_of(currenttraits)) %>%
       arrange(Environment, Genotype)
     
-
-    dataBLUPSAllDisplay <- dataBLUPSAll 
-    for (i in 1:length(currenttraits)){
-      dataBLUPSAllDisplay %<>% 
-        rename(temp=currenttraits[i]) %>% 
-        mutate(temp = replace_na(as.character(temp), "")) %>% 
-        rename_at( vars("temp"),
-                   list(~str_replace(., ., currenttraits[i])) )
+    
+    dataBLUPSAllDisplay <- dataBLUPSAll
+    for (i in 1:length(currenttraits)) {
+      dataBLUPSAllDisplay %<>%
+        rename(temp = currenttraits[i]) %>%
+        mutate(temp = replace_na(as.character(temp), "")) %>%
+        rename_at(vars("temp"),
+                  list( ~ str_replace(., ., currenttraits[i])))
     }
     
-    summaryDat<-NULL
+    summaryDat <- NULL
     for (i in 1:length(currenttraits)) {
       temp <- dataBLUPSAll %>%
-        select(Environment, currenttraits[i]) %>% 
-        rename(temp=currenttraits[i]) %>% 
+        select(Environment, currenttraits[i]) %>%
+        rename(temp = currenttraits[i]) %>%
         group_by(Environment) %>%
-        summarize(Min=min(temp, na.rm = TRUE),
-                  Mean=mean(temp, na.rm = TRUE),
-                  SD=sd(temp, na.rm = TRUE),
-                  Median=median(temp, na.rm = TRUE),
-                  Max=max(temp, na.rm = TRUE)
-        ) %>% 
+        summarize(
+          Min = min(temp, na.rm = TRUE),
+          Mean = mean(temp, na.rm = TRUE),
+          SD = sd(temp, na.rm = TRUE),
+          Median = median(temp, na.rm = TRUE),
+          Max = max(temp, na.rm = TRUE)
+        ) %>%
         select(-Environment)
-      temp<-data.frame(Environment=unique(dataBLUPSAll$Environment), Trait=currenttraits[i], temp)
-      summaryDat<-rbind(summaryDat,temp)
+      temp <-
+        data.frame(Environment = unique(dataBLUPSAll$Environment),
+                   Trait = currenttraits[i],
+                   temp)
+      summaryDat <- rbind(summaryDat, temp)
     }
     summaryDat$SD[is.na(summaryDat$SD)] <- ""
     summaryDat$Min[is.na(summaryDat$Min)] <- ""
     summaryDat$Mean[is.na(summaryDat$Mean)] <- ""
     summaryDat$Median[is.na(summaryDat$Median)] <- ""
     summaryDat$Max[is.na(summaryDat$Max)] <- ""
-    summaryDat$SD[summaryDat$SD=="-Inf"] <- ""
-    summaryDat$Min[summaryDat$Min=="-Inf"] <- ""
-    summaryDat$Mean[summaryDat$Mean=="-Inf"] <- ""
-    summaryDat$Median[summaryDat$median=="-Inf"] <- ""
-    summaryDat$Max[summaryDat$Max=="-Inf"] <- ""
-    summaryDat$SD[summaryDat$SD=="Inf"] <- ""
-    summaryDat$Min[summaryDat$Min=="Inf"] <- ""
-    summaryDat$Mean[summaryDat$Mean=="Inf"] <- ""
-    summaryDat$Median[summaryDat$median=="Inf"] <- ""
-    summaryDat$Max[summaryDat$Max=="Inf"] <- ""
-    summaryDat$Max[summaryDat$Max=="Ibn"] <- ""
+    summaryDat$SD[summaryDat$SD == "-Inf"] <- ""
+    summaryDat$Min[summaryDat$Min == "-Inf"] <- ""
+    summaryDat$Mean[summaryDat$Mean == "-Inf"] <- ""
+    summaryDat$Median[summaryDat$median == "-Inf"] <- ""
+    summaryDat$Max[summaryDat$Max == "-Inf"] <- ""
+    summaryDat$SD[summaryDat$SD == "Inf"] <- ""
+    summaryDat$Min[summaryDat$Min == "Inf"] <- ""
+    summaryDat$Mean[summaryDat$Mean == "Inf"] <- ""
+    summaryDat$Median[summaryDat$median == "Inf"] <- ""
+    summaryDat$Max[summaryDat$Max == "Inf"] <- ""
+    summaryDat$Max[summaryDat$Max == "Ibn"] <- ""
     
     output$AllValues <- renderText({
       if (hideAll$clearAll)
         return()
       else
         dataBLUPSAllDisplay %>%
-        rename_at(vars(one_of(sort(c("Environment","Genotype")))),
-                  list(~str_replace(., ., c(Environment,Genotype))) ) %>%
+        rename_at(vars(one_of(sort(
+          c("Environment", "Genotype")
+        ))),
+        list( ~ str_replace(., ., c(
+          Environment, Genotype
+        )))) %>%
         kable(format = "html", escape = F) %>%
-        kable_styling(bootstrap_options = c("hover", "condensed", "responsive"), fixed_thead = TRUE) 
+        kable_styling(
+          bootstrap_options = c("hover", "condensed", "responsive"),
+          fixed_thead = TRUE
+        )
     })
     
     output$Summary <- renderText({
@@ -957,14 +1041,17 @@ server <- function (input, output, session) {
         return()
       else
         summaryDat %>%
-        rename_at( vars("Environment"),
-                   list(~str_replace(., ., Environment)) ) %>%
+        rename_at(vars("Environment"),
+                  list( ~ str_replace(., ., Environment))) %>%
         kable(format = "html", escape = F) %>%
-        kable_styling(bootstrap_options = c("hover", "condensed", "responsive"), fixed_thead = TRUE) 
+        kable_styling(
+          bootstrap_options = c("hover", "condensed", "responsive"),
+          fixed_thead = TRUE
+        )
     })
     hideAll$clearAll <- FALSE
   })
-
+  
   output$CodesEnvBoxPlot <- renderText({
     req(input$fileUp)
     req(input$selSheetBLUPS)
@@ -979,18 +1066,23 @@ server <- function (input, output, session) {
     dataBLUPSAll <- dataBLUPS()
     
     dTrait <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       select(Environment, Genotype, all_of(currenttraitBoxplot)) %>%
       as.data.frame()
     nE <- sort(unique(dTrait$Environment))
     
     Environment_c <- setNames(paste0("E", seq(nE)), nE)
     
-    E_c <- tibble(Code = Environment_c, Environment = names(Environment_c)) %>% 
+    E_c <-
+      tibble(Code = Environment_c, Environment = names(Environment_c)) %>%
       rename_at(vars("Environment"),
-                list(~str_replace(., ., Environment))) %>% 
+                list( ~ str_replace(., ., Environment))) %>%
       kable(format = "html", escape = F) %>%
-      kable_styling(bootstrap_options = c("hover", "condensed", "responsive"), fixed_thead = TRUE) 
+      kable_styling(
+        bootstrap_options = c("hover", "condensed", "responsive"),
+        fixed_thead = TRUE
+      )
   })
   
   output$BoxPlot <- renderPlot({
@@ -1007,7 +1099,8 @@ server <- function (input, output, session) {
     dataBLUPSAll <- dataBLUPS()
     
     dTrait <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       select(Environment, Genotype, all_of(currenttraitBoxplot)) %>%
       as.data.frame()
     
@@ -1016,26 +1109,30 @@ server <- function (input, output, session) {
     Environment_c <- setNames(paste0("E", seq(nE)), nE)
     Genotype_c <- setNames(paste0("G", seq(nG)), nG)
     dTrait %<>%
-      mutate(Environment_n = recode(Environment, !!!Environment_c), Genotype_n = recode(Genotype, !!!Genotype_c)) 
-    p <- ggplot(dTrait, aes(x=Environment_n, y=dTrait[,3], fill=Environment_n)) +
+      mutate(
+        Environment_n = recode(Environment,!!!Environment_c),
+        Genotype_n = recode(Genotype,!!!Genotype_c)
+      )
+    p <-
+      ggplot(dTrait,
+             aes(x = Environment_n, y = dTrait[, 3], fill = Environment_n)) +
       geom_boxplot() +
       labs(x = "Environment", y = currenttraitBoxplot) +
       theme(panel.background = element_rect(fill = "white", colour = "grey50"))
-    p <- p + theme(legend.position="none")
+    p <- p + theme(legend.position = "none")
     p
   })
-
+  
   output$dwlBoxPlotui <- renderUI({
-    if(hideAll$clearAll)
+    if (hideAll$clearAll)
       return()
     else
       downloadButton("dwlBoxPlot", "Download")
   })
   
   output$dwlBoxPlot <- downloadHandler(
-    
     content = function(file) {
-      if (hideAll$clearAll) 
+      if (hideAll$clearAll)
         return()
       else
         req(input$fileUp)
@@ -1051,7 +1148,8 @@ server <- function (input, output, session) {
       dataBLUPSAll <- dataBLUPS()
       
       dTrait <- dataBLUPSAll %>%
-        rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+        rename(Environment = all_of(Environment),
+               Genotype = all_of(Genotype)) %>%
         select(Environment, Genotype, all_of(currenttraitBoxplot)) %>%
         as.data.frame()
       
@@ -1060,12 +1158,17 @@ server <- function (input, output, session) {
       Environment_c <- setNames(paste0("E", seq(nE)), nE)
       Genotype_c <- setNames(paste0("G", seq(nG)), nG)
       dTrait %<>%
-        mutate(Environment_n = recode(Environment, !!!Environment_c), Genotype_n = recode(Genotype, !!!Genotype_c)) 
-      p <- ggplot(dTrait, aes(x=Environment_n, y=dTrait[,3], fill=Environment_n)) +
+        mutate(
+          Environment_n = recode(Environment,!!!Environment_c),
+          Genotype_n = recode(Genotype,!!!Genotype_c)
+        )
+      p <-
+        ggplot(dTrait,
+               aes(x = Environment_n, y = dTrait[, 3], fill = Environment_n)) +
         geom_boxplot() +
         labs(x = "Environment", y = currenttraitBoxplot) +
         theme(panel.background = element_rect(fill = "white", colour = "grey50"))
-      p <- p + theme(legend.position="none")
+      p <- p + theme(legend.position = "none")
       # print(names(dTrait)[3],)
       png(file)
       print(p)
@@ -1085,10 +1188,15 @@ server <- function (input, output, session) {
       dataBLUPSAll <- dataBLUPS()
       
       dTrait <- dataBLUPSAll %>%
-        rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+        rename(Environment = all_of(Environment),
+               Genotype = all_of(Genotype)) %>%
         select(Environment, Genotype, all_of(currenttraitBoxplot)) %>%
         as.data.frame()
-      paste0("BoxPlot-", names(dTrait)[3], "-", gsub(" ", "_", gsub(":", ".", Sys.time())), ".png")
+      paste0("BoxPlot-",
+             names(dTrait)[3],
+             "-",
+             gsub(" ", "_", gsub(":", ".", Sys.time())),
+             ".png")
     }
   )
   
@@ -1106,21 +1214,26 @@ server <- function (input, output, session) {
     dataBLUPSAll <- dataBLUPS()
     
     dTrait <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       filter(Environment != "OVERALL") %>%
       select(Environment, Genotype, all_of(currenttraitHeat)) %>%
       as.data.frame()
     nE <- sort(unique(dTrait$Environment))
     Environment_c <- setNames(paste0("E", seq(nE)), nE)
     
-    E_c <- tibble(Code = Environment_c, Environment = names(Environment_c)) %>% 
+    E_c <-
+      tibble(Code = Environment_c, Environment = names(Environment_c)) %>%
       rename_at(vars("Environment"),
-                list(~str_replace(., ., Environment))) %>% 
+                list( ~ str_replace(., ., Environment))) %>%
       kable(format = "html", escape = F) %>%
-      kable_styling(bootstrap_options = c("hover", "condensed", "responsive"), fixed_thead = TRUE) 
+      kable_styling(
+        bootstrap_options = c("hover", "condensed", "responsive"),
+        fixed_thead = TRUE
+      )
   })
   
-  output$CodesGenoHeat<- renderText({
+  output$CodesGenoHeat <- renderText({
     req(input$fileUp)
     req(input$selSheetBLUPS)
     req(input$seltraitHeat)
@@ -1134,18 +1247,23 @@ server <- function (input, output, session) {
     dataBLUPSAll <- dataBLUPS()
     
     dTrait <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       filter(Environment != "OVERALL") %>%
       select(Environment, Genotype, all_of(currenttraitHeat)) %>%
       as.data.frame()
     nG <- sort(unique(dTrait$Genotype))
     Genotype_c <- setNames(paste0("G", seq(nG)), nG)
     
-    G_c <- tibble(Code = Genotype_c, Genotype = names(Genotype_c)) %>%
+    G_c <-
+      tibble(Code = Genotype_c, Genotype = names(Genotype_c)) %>%
       rename_at(vars("Genotype"),
-                list(~str_replace(., ., Genotype))) %>%
+                list( ~ str_replace(., ., Genotype))) %>%
       kable(format = "html", escape = F) %>%
-      kable_styling(bootstrap_options = c("hover", "condensed", "responsive"), fixed_thead = TRUE)
+      kable_styling(
+        bootstrap_options = c("hover", "condensed", "responsive"),
+        fixed_thead = TRUE
+      )
   })
   
   output$TableHeatmap <- renderText({
@@ -1159,14 +1277,15 @@ server <- function (input, output, session) {
     currenttraitHeat <- input$seltraitHeat
     dataBLUPSAll <- dataBLUPS()
     dataBLUPSheat <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       select(Environment, Genotype, all_of(currenttraitHeat)) %>%
       arrange(Genotype)
-    missingBLUPS<-dataBLUPSheat %>%
+    missingBLUPS <- dataBLUPSheat %>%
       arrange(Environment) %>%
       rename(temp = all_of(currenttraitHeat)) %>%
       group_by(Genotype) %>%
-      summarize(new=mean(temp, na.rm = TRUE))
+      summarize(new = mean(temp, na.rm = TRUE))
     missinGeno <- missingBLUPS %>%
       filter(is.na(new)) %>%
       select(Genotype) %>%
@@ -1184,30 +1303,41 @@ server <- function (input, output, session) {
     Environment_c <- setNames(paste0("E", seq(nE)), nE)
     Genotype_c <- setNames(paste0("G", seq(nG)), nG)
     dataBLUPSheat %<>%
-      mutate(Environment_n = recode(Environment, !!!Environment_c), Genotype_n = recode(Genotype, !!!Genotype_c))
+      mutate(
+        Environment_n = recode(Environment,!!!Environment_c),
+        Genotype_n = recode(Genotype,!!!Genotype_c)
+      )
     
     dTrait <- dataBLUPSheat %>%
       select(Environment_n, Genotype_n, temp) %>%
-      mutate_at(vars(temp), round, 1) %>% 
+      mutate_at(vars(temp), round, 1) %>%
       arrange(Environment_n, Genotype_n) %>%
-      spread(key = Environment_n, value = temp) 
+      spread(key = Environment_n, value = temp)
     
     dTrait1 <-  dTrait %>%
       mutate_if(is.numeric, function(x) {
-        x = cell_spec(round(x,1), color = "white", bold = T,
-                      background = spec_color(x, end = 0.9, option = "E", direction = -1)
+        x = cell_spec(
+          round(x, 1),
+          color = "white",
+          bold = T,
+          background = spec_color(
+            x,
+            end = 0.9,
+            option = "E",
+            direction = -1
+          )
         )
-      }) %>% 
-      mutate(Genotype = Genotype_n) %>% 
-      select(-Genotype_n) %>% 
-      select(Genotype, everything()) 
-    dTrait1 %>% 
+      }) %>%
+      mutate(Genotype = Genotype_n) %>%
+      select(-Genotype_n) %>%
+      select(Genotype, everything())
+    dTrait1 %>%
       kable(escape = F, align = "c") %>%
       kable_styling(c("striped", "condensed"), full_width = F)
     
   })
   
-
+  
   output$CodesEnvBiplot <- renderText({
     req(input$fileUp)
     req(input$selSheetBLUPS)
@@ -1223,7 +1353,8 @@ server <- function (input, output, session) {
     dataBLUPSAll <- dataBLUPS()
     
     datBLUPSBiplot <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       filter(Environment != "OVERALL") %>%
       select(Environment, Genotype, all_of(currenttraitBiplot)) %>%
       as.data.frame()
@@ -1231,15 +1362,19 @@ server <- function (input, output, session) {
     nE <- sort(unique(datBLUPSBiplot$Environment))
     Environment_c <- setNames(paste0("E", seq(nE)), nE)
     
-    E_c <- tibble(Code = Environment_c, Environment = names(Environment_c)) %>% 
+    E_c <-
+      tibble(Code = Environment_c, Environment = names(Environment_c)) %>%
       rename_at(vars("Environment"),
-                list(~str_replace(., ., Environment))) %>% 
+                list( ~ str_replace(., ., Environment))) %>%
       kable(format = "html", escape = F) %>%
-      kable_styling(bootstrap_options = c("hover", "condensed", "responsive"), fixed_thead = TRUE)
+      kable_styling(
+        bootstrap_options = c("hover", "condensed", "responsive"),
+        fixed_thead = TRUE
+      )
     
   })
-
-  output$CodesGenoBiPlot<- renderText({
+  
+  output$CodesGenoBiPlot <- renderText({
     req(input$fileUp)
     req(input$selSheetBLUPS)
     req(input$seltraitBiplot)
@@ -1253,7 +1388,8 @@ server <- function (input, output, session) {
     dataBLUPSAll <- dataBLUPS()
     
     datBLUPSBiplot <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       filter(Environment != "OVERALL") %>%
       select(Environment, Genotype, all_of(currenttraitBiplot)) %>%
       as.data.frame()
@@ -1261,11 +1397,15 @@ server <- function (input, output, session) {
     nG <- sort(unique(datBLUPSBiplot$Genotype))
     Genotype_c <- setNames(paste0("G", seq(nG)), nG)
     
-    G_c <- tibble(Code = Genotype_c, Genotype = names(Genotype_c)) %>%
+    G_c <-
+      tibble(Code = Genotype_c, Genotype = names(Genotype_c)) %>%
       rename_at(vars("Genotype"),
-                list(~str_replace(., ., Genotype))) %>%
+                list( ~ str_replace(., ., Genotype))) %>%
       kable(format = "html", escape = F) %>%
-      kable_styling(bootstrap_options = c("hover", "condensed", "responsive"), fixed_thead = TRUE)
+      kable_styling(
+        bootstrap_options = c("hover", "condensed", "responsive"),
+        fixed_thead = TRUE
+      )
   })
   
   output$BiPlot <- renderPlot({
@@ -1287,16 +1427,17 @@ server <- function (input, output, session) {
     dataBLUPSAll <- dataBLUPS()
     
     datBLUPSBiplot <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
-      select(Environment, Genotype, all_of(currenttraitBiplot)) %>% 
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
+      select(Environment, Genotype, all_of(currenttraitBiplot)) %>%
       arrange(Genotype)
     
     Env <- unique(datBLUPSBiplot$Environment)
     
     if ("OVERALL" %in% Env) {
       datBLUPSBiplot %<>%
-        filter(Environment != "OVERALL") 
-    } 
+        filter(Environment != "OVERALL")
+    }
     
     nE <- sort(unique(datBLUPSBiplot$Environment))
     nG <- sort(unique(datBLUPSBiplot$Genotype))
@@ -1304,20 +1445,21 @@ server <- function (input, output, session) {
     Genotype_c <- setNames(paste0("G", seq(nG)), nG)
     EnvNULL <- datBLUPSBiplot %>%
       select(Environment, all_of(currenttraitBiplot)) %>%
-      rename(temp = all_of(currenttraitBiplot)) %>% 
-      group_by(Environment) %>% 
-      summarize(Count=sum(!is.na(temp))) %>% 
+      rename(temp = all_of(currenttraitBiplot)) %>%
+      group_by(Environment) %>%
+      summarize(Count = sum(!is.na(temp))) %>%
       filter(Count == 0) %>%
       select(Environment) %>%
       as_vector()
-    datBLUPSBiplot <- datBLUPSBiplot %>% 
+    datBLUPSBiplot <- datBLUPSBiplot %>%
       filter(!(Environment %in% EnvNULL))
-    Environment_c <-  Environment_c[names(Environment_c) %in% unique(datBLUPSBiplot$Environment)]
-    missingBLUPS<-datBLUPSBiplot %>%
+    Environment_c <-
+      Environment_c[names(Environment_c) %in% unique(datBLUPSBiplot$Environment)]
+    missingBLUPS <- datBLUPSBiplot %>%
       arrange(Environment) %>%
       rename(temp = all_of(currenttraitBiplot)) %>%
       group_by(Genotype) %>%
-      summarize(new=mean(temp, na.rm = TRUE))
+      summarize(new = mean(temp, na.rm = TRUE))
     datBLUPSBiplot %<>%
       left_join(missingBLUPS, by = "Genotype") %>%
       rename(temp = all_of(currenttraitBiplot)) %>%
@@ -1326,26 +1468,35 @@ server <- function (input, output, session) {
       filter(!is.na(temp))
     
     datBLUPSBiplot %<>%
-      mutate(Environment_n = recode(Environment, !!!Environment_c), Genotype_n = recode(Genotype, !!!Genotype_c))
+      mutate(
+        Environment_n = recode(Environment,!!!Environment_c),
+        Genotype_n = recode(Genotype,!!!Genotype_c)
+      )
     dTrait <- datBLUPSBiplot %>%
       select(Environment_n, Genotype_n, temp) %>%
       arrange(Environment_n, Genotype_n) %>%
       spread(key = Environment_n, value = temp) %>%
-      column_to_rownames("Genotype_n") %>% 
+      column_to_rownames("Genotype_n") %>%
       na.omit()
     
-    dTrait <- Filter(var, dTrait)  
+    dTrait <- Filter(var, dTrait)
     if (ncol(dTrait) > 1) {
       dTrait <- dTrait[, colSums(is.na(dTrait)) != nrow(dTrait)]
       pca <- prcomp(dTrait, scale = TRUE, center = TRUE)
       yX <- as.numeric(currentDimX)
       yY <- as.numeric(currentDimY)
       
-      fviz_pca_biplot(pca, axes = c(yX, yY), col.ind="blue", col.var="red", title="")
+      fviz_pca_biplot(
+        pca,
+        axes = c(yX, yY),
+        col.ind = "blue",
+        col.var = "red",
+        title = ""
+      )
     }
     
   })
-
+  
   output$dwlBiPlotui <- renderUI({
     req(input$fileUp)
     req(input$selSheetBLUPS)
@@ -1364,21 +1515,22 @@ server <- function (input, output, session) {
     dataBLUPSAll <- dataBLUPS()
     
     datBLUPSBiplot <- dataBLUPSAll %>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
-      select(Environment, Genotype, all_of(currenttraitBiplot)) %>% 
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
+      select(Environment, Genotype, all_of(currenttraitBiplot)) %>%
       arrange(Genotype)
     
     Env <- unique(datBLUPSBiplot$Environment)
     
-    if(hideAll$clearAll)
+    if (hideAll$clearAll)
       return()
     else
       if ("OVERALL" %in% Env) {
-        if (length(Env)>2) {
+        if (length(Env) > 2) {
           downloadButton("dwlBiPlot", "Download")
         }
       } else {
-        if (length(Env)>1) {
+        if (length(Env) > 1) {
           downloadButton("dwlBiPlot", "Download")
         }
       }
@@ -1386,9 +1538,8 @@ server <- function (input, output, session) {
   })
   
   output$dwlBiPlot <- downloadHandler(
-    
     content = function(file) {
-      if (hideAll$clearAll) 
+      if (hideAll$clearAll)
         return()
       else
         req(input$fileUp)
@@ -1408,15 +1559,16 @@ server <- function (input, output, session) {
       dataBLUPSAll <- dataBLUPS()
       
       datBLUPSBiplot <- dataBLUPSAll %>%
-        rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+        rename(Environment = all_of(Environment),
+               Genotype = all_of(Genotype)) %>%
         select(Environment, Genotype, all_of(currenttraitBiplot)) %>%
         arrange(Genotype)
       
       Env <- unique(datBLUPSBiplot$Environment)
       
-      if ("OVERALL" %in% Env){
+      if ("OVERALL" %in% Env) {
         datBLUPSBiplot %<>%
-          filter(Environment != "OVERALL") 
+          filter(Environment != "OVERALL")
       }
       
       nE <- sort(unique(datBLUPSBiplot$Environment))
@@ -1425,20 +1577,21 @@ server <- function (input, output, session) {
       Genotype_c <- setNames(paste0("G", seq(nG)), nG)
       EnvNULL <- datBLUPSBiplot %>%
         select(Environment, all_of(currenttraitBiplot)) %>%
-        rename(temp = all_of(currenttraitBiplot)) %>% 
-        group_by(Environment) %>% 
-        summarize(Count=sum(!is.na(temp))) %>% 
+        rename(temp = all_of(currenttraitBiplot)) %>%
+        group_by(Environment) %>%
+        summarize(Count = sum(!is.na(temp))) %>%
         filter(Count == 0) %>%
         select(Environment) %>%
         as_vector()
-      datBLUPSBiplot <- datBLUPSBiplot %>% 
+      datBLUPSBiplot <- datBLUPSBiplot %>%
         filter(!(Environment %in% EnvNULL))
-      Environment_c <-  Environment_c[names(Environment_c) %in% unique(datBLUPSBiplot$Environment)]
-      missingBLUPS<-datBLUPSBiplot %>%
+      Environment_c <-
+        Environment_c[names(Environment_c) %in% unique(datBLUPSBiplot$Environment)]
+      missingBLUPS <- datBLUPSBiplot %>%
         arrange(Environment) %>%
         rename(temp = all_of(currenttraitBiplot)) %>%
         group_by(Genotype) %>%
-        summarize(new=mean(temp, na.rm = TRUE))
+        summarize(new = mean(temp, na.rm = TRUE))
       datBLUPSBiplot %<>%
         left_join(missingBLUPS, by = "Genotype") %>%
         rename(temp = all_of(currenttraitBiplot)) %>%
@@ -1447,12 +1600,15 @@ server <- function (input, output, session) {
         filter(!is.na(temp))
       
       datBLUPSBiplot %<>%
-        mutate(Environment_n = recode(Environment, !!!Environment_c), Genotype_n = recode(Genotype, !!!Genotype_c))
+        mutate(
+          Environment_n = recode(Environment,!!!Environment_c),
+          Genotype_n = recode(Genotype,!!!Genotype_c)
+        )
       dTrait <- datBLUPSBiplot %>%
         select(Environment_n, Genotype_n, temp) %>%
         arrange(Environment_n, Genotype_n) %>%
         spread(key = Environment_n, value = temp) %>%
-        column_to_rownames("Genotype_n") %>% 
+        column_to_rownames("Genotype_n") %>%
         na.omit()
       
       png(file)
@@ -1463,14 +1619,19 @@ server <- function (input, output, session) {
         yX <- as.numeric(currentDimX)
         yY <- as.numeric(currentDimY)
         
-        print(fviz_pca_biplot(pca, axes = c(yX, yY), col.ind="blue", col.var="red", title=""))
+        print(fviz_pca_biplot(
+          pca,
+          axes = c(yX, yY),
+          col.ind = "blue",
+          col.var = "red",
+          title = ""
+        ))
       }
       
       dev.off()
     },
     
     filename = function() {
-      
       req(input$fileUp)
       req(input$selSheetBLUPS)
       req(input$seltraitBiplot)
@@ -1484,10 +1645,14 @@ server <- function (input, output, session) {
       currenttraits <- input$InputAnalysisTraits
       currenttraitBiplot <- input$seltraitBiplot
       
-      paste0("BiPlot-", currenttraitBiplot, "-", gsub(" ", "_", gsub(":", ".", Sys.time())), ".png")
+      paste0("BiPlot-",
+             currenttraitBiplot,
+             "-",
+             gsub(" ", "_", gsub(":", ".", Sys.time())),
+             ".png")
     }
   )
-
+  
   output$CodesEnvScater <- renderText({
     req(input$fileUp)
     req(input$selSheetBLUPS)
@@ -1500,21 +1665,26 @@ server <- function (input, output, session) {
     dataBLUPSAll <- dataBLUPS()
     
     dataBLUPSAll %<>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       select(Environment, Genotype, all_of(currenttraits)) %>%
       na.omit() %>%
       as.data.frame()
     nE <- sort(unique(dataBLUPSAll$Environment))
     Environment_c <- setNames(paste0("E", seq(nE)), nE)
     
-    E_c <- tibble(Code = Environment_c, Environment = names(Environment_c)) %>% 
+    E_c <-
+      tibble(Code = Environment_c, Environment = names(Environment_c)) %>%
       rename_at(vars("Environment"),
-                list(~str_replace(., ., Environment))) %>% 
+                list( ~ str_replace(., ., Environment))) %>%
       kable(format = "html", escape = F) %>%
-      kable_styling(bootstrap_options = c("hover", "condensed", "responsive"), fixed_thead = TRUE) 
+      kable_styling(
+        bootstrap_options = c("hover", "condensed", "responsive"),
+        fixed_thead = TRUE
+      )
   })
   
-  output$CodesGenoScater<- renderText({
+  output$CodesGenoScater <- renderText({
     req(input$fileUp)
     req(input$selSheetBLUPS)
     req(input$InputAnalysisTraits)
@@ -1526,7 +1696,8 @@ server <- function (input, output, session) {
     dataBLUPSAll <- dataBLUPS()
     
     dataBLUPSAll %<>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       select(Environment, Genotype, all_of(currenttraits)) %>%
       na.omit() %>%
       as.data.frame()
@@ -1534,24 +1705,28 @@ server <- function (input, output, session) {
     nG <- sort(unique(dataBLUPSAll$Genotype))
     Genotype_c <- setNames(paste0("G", seq(nG)), nG)
     
-    G_c <- tibble(Code = Genotype_c, Genotype = names(Genotype_c)) %>%
+    G_c <-
+      tibble(Code = Genotype_c, Genotype = names(Genotype_c)) %>%
       rename_at(vars("Genotype"),
-                list(~str_replace(., ., Genotype))) %>%
+                list( ~ str_replace(., ., Genotype))) %>%
       kable(format = "html", escape = F) %>%
-      kable_styling(bootstrap_options = c("hover", "condensed", "responsive"), fixed_thead = TRUE)
+      kable_styling(
+        bootstrap_options = c("hover", "condensed", "responsive"),
+        fixed_thead = TRUE
+      )
   })
   
-
+  
   output$OneTraitInfo <- renderText({
     req(input$InputAnalysisTraits)
     if (hideAll$clearAll)
       return()
     else
-      if (length(input$InputAnalysisTraits)<2){
+      if (length(input$InputAnalysisTraits) < 2) {
         print("You need more than one trait.")
       }
   })
-
+  
   output$ScatterPlot <- renderPlot({
     req(input$fileUp)
     req(input$selSheetBLUPS)
@@ -1563,7 +1738,8 @@ server <- function (input, output, session) {
     currenttraits <- input$InputAnalysisTraits
     dataBLUPSAll <- dataBLUPS()
     dataBLUPSAll %<>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype)) %>%
       select(Environment, Genotype, all_of(currenttraits)) %>%
       na.omit()
     
@@ -1573,28 +1749,37 @@ server <- function (input, output, session) {
     Genotype_c <- setNames(paste0("G", seq(nG)), nG)
     
     dataBLUPSAll %<>%
-      mutate(Environment = recode(Environment, !!!Environment_c), Genotype = recode(Genotype, !!!Genotype_c)) 
+      mutate(
+        Environment = recode(Environment,!!!Environment_c),
+        Genotype = recode(Genotype,!!!Genotype_c)
+      )
     
-    if (length(currenttraits)>1) {   
-      p <- ggscatmat(dataBLUPSAll, columns = 3:length(dataBLUPSAll), color = "Environment", alpha=0.8)
-      p <- p + labs(x="", y="")
+    if (length(currenttraits) > 1) {
+      p <-
+        ggscatmat(
+          dataBLUPSAll,
+          columns = 3:length(dataBLUPSAll),
+          color = "Environment",
+          alpha = 0.8
+        )
+      p <- p + labs(x = "", y = "")
       p <- p + theme_bw()
       p
-    } 
+    }
     
   })
-
+  
   output$dwlScatterPlotui <- renderUI({
-    if(hideAll$clearAll)
+    if (hideAll$clearAll)
       return()
     else
-      if (length(input$InputAnalysisTraits)>1) 
+      if (length(input$InputAnalysisTraits) > 1)
         downloadButton("dwlScatterPlot", "Download")
   })
   
   output$dwlScatterPlot <- downloadHandler(
     content = function(file) {
-      if (hideAll$clearAll) 
+      if (hideAll$clearAll)
         return()
       else
         req(input$fileUp)
@@ -1607,7 +1792,8 @@ server <- function (input, output, session) {
       currenttraits <- input$InputAnalysisTraits
       dataBLUPSAll <- dataBLUPS()
       dataBLUPSAll %<>%
-        rename(Environment = all_of(Environment), Genotype = all_of(Genotype)) %>%
+        rename(Environment = all_of(Environment),
+               Genotype = all_of(Genotype)) %>%
         select(Environment, Genotype, all_of(currenttraits)) %>%
         na.omit()
       
@@ -1617,13 +1803,22 @@ server <- function (input, output, session) {
       Genotype_c <- setNames(paste0("G", seq(nG)), nG)
       
       dataBLUPSAll %<>%
-        mutate(Environment = recode(Environment, !!!Environment_c), Genotype = recode(Genotype, !!!Genotype_c)) 
+        mutate(
+          Environment = recode(Environment,!!!Environment_c),
+          Genotype = recode(Genotype,!!!Genotype_c)
+        )
       
       png(file)
       
-      if (length(currenttraits)>1) {   
-        p <- ggscatmat(dataBLUPSAll, columns = 3:length(dataBLUPSAll), color = "Environment", alpha=0.8)
-        p <- p + labs(x="", y="")
+      if (length(currenttraits) > 1) {
+        p <-
+          ggscatmat(
+            dataBLUPSAll,
+            columns = 3:length(dataBLUPSAll),
+            color = "Environment",
+            alpha = 0.8
+          )
+        p <- p + labs(x = "", y = "")
         p <- p + theme_bw()
         p
       }
@@ -1648,7 +1843,11 @@ server <- function (input, output, session) {
     req(input$InputEnvironment)
     Genotype <- input$InputGenotype
     Environment <- input$InputEnvironment
-    req(!is.null(input$InputHighTraitsChecks) | !is.null(input$InputRangeTraitsChecks) | !is.null(input$InputLowTraitsChecks))
+    req(
+      !is.null(input$InputHighTraitsChecks) |
+        !is.null(input$InputRangeTraitsChecks) |
+        !is.null(input$InputLowTraitsChecks)
+    )
     currentenv <- input$InputEnvChecks
     currentchecks <- input$InputChecks %>%
       sort()
@@ -1663,18 +1862,23 @@ server <- function (input, output, session) {
     myEnvironment <- myEnvironment()
     dataBLUPSAll <- dataBLUPS()
     dataBLUPSAll %<>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype))
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype))
     
     dataBLUPS <- dataBLUPSAll %>%
       filter(Environment == myEnvironment) %>%
       select(Environment, Genotype, all_of(currenttraits)) %>%
       arrange(Genotype)
     
-    currenttraits <- currenttraits[colSums(is.na(dataBLUPS[, currenttraits]))!=nrow(dataBLUPS[, currenttraits])] 
+    currenttraits <-
+      currenttraits[colSums(is.na(dataBLUPS[, currenttraits])) != nrow(dataBLUPS[, currenttraits])]
     
-    currenttraithigh <- sort(intersect(currenttraithigh, currenttraits))
-    currenttraitlow <- sort(intersect(currenttraitlow, currenttraits))
-    currenttraitrange <- sort(intersect(currenttraitrange, currenttraits))
+    currenttraithigh <-
+      sort(intersect(currenttraithigh, currenttraits))
+    currenttraitlow <-
+      sort(intersect(currenttraitlow, currenttraits))
+    currenttraitrange <-
+      sort(intersect(currenttraitrange, currenttraits))
     TraitnoRange <- sort(c(currenttraithigh, currenttraitlow))
     TraitRange <- sort(currenttraitrange)
     Traits <- sort(c(TraitnoRange, TraitRange))
@@ -1682,19 +1886,18 @@ server <- function (input, output, session) {
     values <- dataBLUPS %>%
       filter(Genotype %in% currentchecks) %>%
       select(all_of(currenttraits)) %>%
-      summarise_all(mean,na.rm=T)
+      summarise_all(mean, na.rm = T)
     
     if (length(TraitRange) != 0) {
       range <- matrix(0, length(TraitRange), 2)
       for (i in 1:length(TraitRange)) {
         rangeS <- paste0('input$', 'TraitSliderChecksR', i)
-        range[i, ] <- sapply(rangeS, function(x)
+        range[i,] <- sapply(rangeS, function(x)
           eval(parse(text = x)))
       }
     }
     
     if (!is.null(input$InputHighTraitsChecks)) {
-      
       output$TableChecksHighInfo <- renderText({
         req(input$InputHighTraitsChecks)
         if (hideAll$clearAll)
@@ -1716,7 +1919,7 @@ server <- function (input, output, session) {
         Checks <- rbind(Checks, ValuesMean)
         colnames(Checks)[1] <- "Check(s)"
         if (length(currentchecks) == 1) {
-          Checks <- Checks[Checks[, 1] != "Mean", ]
+          Checks <- Checks[Checks[, 1] != "Mean",]
         }
         Checks %<>%
           select(c("Check(s)", all_of(currenttraithigh)))
@@ -1729,12 +1932,14 @@ server <- function (input, output, session) {
           round(2)
         Checks %>%
           kable(format = "html", escape = F) %>%
-          kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), fixed_thead = TRUE)
+          kable_styling(
+            bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+            fixed_thead = TRUE
+          )
       })
     }
     
     if (!is.null(input$InputLowTraitsChecks)) {
-      
       output$TableChecksLowInfo <- renderText({
         req(input$InputLowTraitsChecks)
         if (hideAll$clearAll)
@@ -1756,7 +1961,7 @@ server <- function (input, output, session) {
         Checks <- rbind(Checks, ValuesMean)
         colnames(Checks)[1] <- "Check(s)"
         if (length(currentchecks) == 1) {
-          Checks <- Checks[Checks[, 1] != "Mean", ]
+          Checks <- Checks[Checks[, 1] != "Mean",]
         }
         Checks %<>%
           select(c("Check(s)", all_of(currenttraitlow)))
@@ -1769,13 +1974,15 @@ server <- function (input, output, session) {
           round(2)
         Checks %>%
           kable(format = "html", escape = F) %>%
-          kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), fixed_thead = TRUE)
+          kable_styling(
+            bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+            fixed_thead = TRUE
+          )
       })
     }
-
     
-    if(!is.null(input$InputRangeTraitsChecks)) {
-      
+    
+    if (!is.null(input$InputRangeTraitsChecks)) {
       output$TableChecksRInfo <- renderText({
         req(input$InputRangeTraitsChecks)
         if (hideAll$clearAll)
@@ -1791,14 +1998,18 @@ server <- function (input, output, session) {
         else
           rangeMin <- range[, 1]
         rangeMax <- range[, 2]
-        ChecksR <- data.frame(TraitRange, round(rangeMin, 2), round(rangeMax, 2))
+        ChecksR <-
+          data.frame(TraitRange, round(rangeMin, 2), round(rangeMax, 2))
         colnames(ChecksR) <- c("Trait", "Lowest", "Highest")
         ChecksR %>%
           kable(format = "html", escape = F) %>%
-          kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), fixed_thead = TRUE)
+          kable_styling(
+            bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+            fixed_thead = TRUE
+          )
       })
     }
-
+    
     
     if (length(currenttraithigh) != 0) {
       IndexSatisfyHigh <- dataBLUPSHigh <- dataBLUPSAll %>%
@@ -1806,8 +2017,9 @@ server <- function (input, output, session) {
       valuesHigh <- values[, currenttraithigh]
       
       for (i in 1:length(currenttraithigh)) {
-        j <- i+2
-        IndexSatisfyHigh[, j] <- as.vector(ifelse(dataBLUPSHigh[, j] > as.numeric(valuesHigh[1, i]),1,0))
+        j <- i + 2
+        IndexSatisfyHigh[, j] <-
+          as.vector(ifelse(dataBLUPSHigh[, j] > as.numeric(valuesHigh[1, i]), 1, 0))
       }
     }
     
@@ -1816,8 +2028,9 @@ server <- function (input, output, session) {
         select(Environment, Genotype, all_of(currenttraitlow))
       valuesLow <- values[, currenttraitlow]
       for (i in 1:length(currenttraitlow)) {
-        j <- i+2
-        IndexSatisfyInf[, j]<-as.vector(ifelse(dataBLUPSLow[, j] <= as.numeric(valuesLow[1, i]),1,0))
+        j <- i + 2
+        IndexSatisfyInf[, j] <-
+          as.vector(ifelse(dataBLUPSLow[, j] <= as.numeric(valuesLow[1, i]), 1, 0))
       }
     }
     
@@ -1825,19 +2038,26 @@ server <- function (input, output, session) {
       IndexSatisfyRange <- dataBLUPSRange <- dataBLUPSAll %>%
         select(Environment, Genotype, all_of(currenttraitrange))
       for (i in 1:length(currenttraitrange)) {
-        j <- i+2
-        IndexSatisfyRange[, j] <- as.vector(ifelse((dataBLUPSRange[, j] <= range[i, 2] & dataBLUPSRange[, j] >= range[i, 1]), 1, 0))
+        j <- i + 2
+        IndexSatisfyRange[, j] <-
+          as.vector(ifelse((dataBLUPSRange[, j] <= range[i, 2] &
+                              dataBLUPSRange[, j] >= range[i, 1]),
+                           1,
+                           0
+          ))
       }
     }
     
-    if (length(currenttraithigh) != 0 & length(currenttraitlow) == 0 & length(currenttraitrange) == 0) {
+    if (length(currenttraithigh) != 0 &
+        length(currenttraitlow) == 0 & length(currenttraitrange) == 0) {
       traits <- currenttraithigh
       IndexSatisfy <- dataBLUPSAll %>%
         select(Environment, Genotype) %>%
         left_join(IndexSatisfyHigh) %>%
         select (Environment, Genotype, all_of(traits))
       traitsTest <- paste0(traits, ".Test")
-    } else if (length(currenttraithigh) != 0 & length(currenttraitlow) != 0 & length(currenttraitrange) == 0) {
+    } else if (length(currenttraithigh) != 0 &
+               length(currenttraitlow) != 0 & length(currenttraitrange) == 0) {
       traits <- sort(c(currenttraithigh, currenttraitlow))
       IndexSatisfy <- dataBLUPSAll %>%
         select(Environment, Genotype) %>%
@@ -1845,7 +2065,8 @@ server <- function (input, output, session) {
         left_join(IndexSatisfyInf) %>%
         select (Environment, Genotype, all_of(traits))
       traitsTest <- paste0(traits, ".Test")
-    } else if (length(currenttraithigh) != 0 & length(currenttraitlow) == 0 & length(currenttraitrange) != 0) {
+    } else if (length(currenttraithigh) != 0 &
+               length(currenttraitlow) == 0 & length(currenttraitrange) != 0) {
       traits <- sort(c(currenttraitrange, currenttraithigh))
       IndexSatisfy <- dataBLUPSAll %>%
         select(Environment, Genotype) %>%
@@ -1853,21 +2074,24 @@ server <- function (input, output, session) {
         left_join(IndexSatisfyRange) %>%
         select (Environment, Genotype, all_of(traits))
       traitsTest <- paste0(traits, ".Test")
-    } else if (length(currenttraithigh) == 0 & length(currenttraitlow) == 0 & length(currenttraitrange) != 0) {
+    } else if (length(currenttraithigh) == 0 &
+               length(currenttraitlow) == 0 & length(currenttraitrange) != 0) {
       traits <- currenttraitrange
       IndexSatisfy <- dataBLUPSAll %>%
         select(Environment, Genotype) %>%
         left_join(IndexSatisfyRange) %>%
         select (Environment, Genotype, all_of(traits))
       traitsTest <- paste0(traits, ".Test")
-    } else if (length(currenttraithigh) == 0 & length(currenttraitlow) != 0 & length(currenttraitrange) == 0) {
+    } else if (length(currenttraithigh) == 0 &
+               length(currenttraitlow) != 0 & length(currenttraitrange) == 0) {
       traits <- currenttraitlow
       IndexSatisfy <- dataBLUPSAll %>%
         select(Environment, Genotype) %>%
         left_join(IndexSatisfyInf) %>%
         select (Environment, Genotype, all_of(traits))
       traitsTest <- paste0(currenttraitlow, ".Test")
-    } else if (length(currenttraithigh) == 0 & length(currenttraitlow) != 0 & length(currenttraitrange) != 0) {
+    } else if (length(currenttraithigh) == 0 &
+               length(currenttraitlow) != 0 & length(currenttraitrange) != 0) {
       traits <- sort(c(currenttraitrange, currenttraitlow))
       IndexSatisfy <- dataBLUPSAll %>%
         select(Environment, Genotype) %>%
@@ -1876,7 +2100,8 @@ server <- function (input, output, session) {
         select (Environment, Genotype, all_of(traits))
       traitsTest <- paste0(traits, ".Test")
     } else {
-      traits <- sort(c(currenttraitrange, currenttraithigh, currenttraitlow))
+      traits <-
+        sort(c(currenttraitrange, currenttraithigh, currenttraitlow))
       IndexSatisfy <- dataBLUPSAll  %>%
         select(Environment, Genotype) %>%
         left_join(IndexSatisfyHigh) %>%
@@ -1888,7 +2113,7 @@ server <- function (input, output, session) {
     
     IndexSatisfycurrent <- IndexSatisfy %>%
       as_tibble() %>%
-      filter(Environment==myEnvironment) %>%
+      filter(Environment == myEnvironment) %>%
       arrange(Genotype) %>%
       select(-Environment)
     colnames(IndexSatisfycurrent)[-1] <- traitsTest
@@ -1898,76 +2123,84 @@ server <- function (input, output, session) {
       select(Environment, Genotype, all_of(traits)) %>%
       left_join(IndexSatisfycurrent)
     
-    if (myEnvironment == "OVERALL" & length(unique(dataBLUPSAll$Environment)) > 1)  {
-
+    if (myEnvironment == "OVERALL" &
+        length(unique(dataBLUPSAll$Environment)) > 1)  {
       TableFinalChecks <- dataBLUPSIndex %>%
-        arrange(Genotype) %>% 
-        mutate_at(c(all_of(traitsTest), all_of(traits)), round, digits=2)
+        arrange(Genotype) %>%
+        mutate_at(c(all_of(traitsTest), all_of(traits)), round, digits =
+                    2)
       
       hide1 <- nt + 3
       hide2 <- 2 * nt + 2
-    
+      
       traitsRed <- colnames(TableFinalChecks) %in% traits
       
-      TableFinalChecksK <- as_huxtable(TableFinalChecks) %>% 
-        set_text_color(everywhere, traitsRed, 'red') %>% 
+      TableFinalChecksK <- as_huxtable(TableFinalChecks) %>%
+        set_text_color(everywhere, traitsRed, 'red') %>%
         slice(2:n())
       
-      for (i in 1:length(traitsTest)){
-        j <- 2+i
-        k <- nt+j
-        testColor <- as.logical(t(TableFinalChecksK[,k]) == 1)
+      for (i in 1:length(traitsTest)) {
+        j <- 2 + i
+        k <- nt + j
+        testColor <- as.logical(t(TableFinalChecksK[, k]) == 1)
         
-        TableFinalChecksK <- TableFinalChecksK %>% insert_column(testColor, after = colnames(TableFinalChecksK)[ncol(TableFinalChecksK)])
-        colnames(TableFinalChecksK)[ncol(TableFinalChecksK)] <- "testColor"
+        TableFinalChecksK <-
+          TableFinalChecksK %>% insert_column(testColor, after = colnames(TableFinalChecksK)[ncol(TableFinalChecksK)])
+        colnames(TableFinalChecksK)[ncol(TableFinalChecksK)] <-
+          "testColor"
         
         TableFinalChecksK %<>%
-          set_text_color(row=testColor, col = j, "green4")
-        TableFinalChecksK <- TableFinalChecksK[,-ncol(TableFinalChecksK)]
+          set_text_color(row = testColor, col = j, "green4")
+        TableFinalChecksK <-
+          TableFinalChecksK[, -ncol(TableFinalChecksK)]
       }
       
-      TableFinalChecksK <- TableFinalChecksK %>% 
-        select(-all_of(traitsTest)) 
-      TableFinalChecksK <- add_colnames(TableFinalChecksK) %>% 
-        set_number_format(everywhere, colnames(TableFinalChecksK), fmt_pretty()) 
-      bold(TableFinalChecksK)[1,] <- TRUE
-      bottom_border(TableFinalChecksK)[1,] <- 1
-      bottom_border(TableFinalChecksK)[nrow(TableFinalChecksK),] <- 1
+      TableFinalChecksK <- TableFinalChecksK %>%
+        select(-all_of(traitsTest))
+      TableFinalChecksK <- add_colnames(TableFinalChecksK) %>%
+        set_number_format(everywhere, colnames(TableFinalChecksK), fmt_pretty())
+      bold(TableFinalChecksK)[1, ] <- TRUE
+      bottom_border(TableFinalChecksK)[1, ] <- 1
+      bottom_border(TableFinalChecksK)[nrow(TableFinalChecksK), ] <-
+        1
     } else {
       TableFinalChecks <- dataBLUPSIndex
       hide1 <- nt + 3
       hide2 <- ncol(TableFinalChecks)
-
+      
       traitsRed <- colnames(TableFinalChecks) %in% traits
       
-      TableFinalChecksK <- as_huxtable(TableFinalChecks) %>% 
-        set_text_color(everywhere, traitsRed, 'red') %>% 
+      TableFinalChecksK <- as_huxtable(TableFinalChecks) %>%
+        set_text_color(everywhere, traitsRed, 'red') %>%
         slice(2:n())
       
-      for (i in 1:length(traitsTest)){
-        j <- 2+i
-        k <- nt+j
-        testColor <- as.logical(t(TableFinalChecksK[,k]) == 1)
+      for (i in 1:length(traitsTest)) {
+        j <- 2 + i
+        k <- nt + j
+        testColor <- as.logical(t(TableFinalChecksK[, k]) == 1)
         
-        TableFinalChecksK <- TableFinalChecksK %>% insert_column(testColor, after = colnames(TableFinalChecksK)[ncol(TableFinalChecksK)])
-        colnames(TableFinalChecksK)[ncol(TableFinalChecksK)] <- "testColor"
+        TableFinalChecksK <-
+          TableFinalChecksK %>% insert_column(testColor, after = colnames(TableFinalChecksK)[ncol(TableFinalChecksK)])
+        colnames(TableFinalChecksK)[ncol(TableFinalChecksK)] <-
+          "testColor"
         
         TableFinalChecksK %<>%
-          set_text_color(row=testColor, col = j, "green4")
-        TableFinalChecksK <- TableFinalChecksK[,-ncol(TableFinalChecksK)]
+          set_text_color(row = testColor, col = j, "green4")
+        TableFinalChecksK <-
+          TableFinalChecksK[, -ncol(TableFinalChecksK)]
       }
       
-      TableFinalChecksK <- TableFinalChecksK %>% 
-        select(-all_of(traitsTest)) 
-      TableFinalChecksK <- add_colnames(TableFinalChecksK) %>% 
+      TableFinalChecksK <- TableFinalChecksK %>%
+        select(-all_of(traitsTest))
+      TableFinalChecksK <- add_colnames(TableFinalChecksK) %>%
         set_number_format(everywhere, colnames(TableFinalChecksK), fmt_pretty())
-      bold(TableFinalChecksK)[1,] <- TRUE
-      bottom_border(TableFinalChecksK)[1,] <- 1
-      bottom_border(TableFinalChecksK)[nrow(TableFinalChecksK),] <- 1
+      bold(TableFinalChecksK)[1, ] <- TRUE
+      bottom_border(TableFinalChecksK)[1, ] <- 1
+      bottom_border(TableFinalChecksK)[nrow(TableFinalChecksK), ] <-
+        1
     }
     
-    if (myEnvironment == "OVERALL" )  {
-      
+    if (myEnvironment == "OVERALL")  {
       output$TableSatisfyChecksEnvSupInfo <- renderText({
         if (hideAll$clearAll)
           return()
@@ -1975,26 +2208,30 @@ server <- function (input, output, session) {
     }
     
     if (length(Traits) != 0) {
-      
       output$TableSatisfyChecks <- renderText({
         if (hideAll$clearAll)
           return()
         else
-          for(i in 1:length(traits)){
-            j <- i+2
+          for (i in 1:length(traits)) {
+            j <- i + 2
             TableFinalChecks[[j]] <- case_when(
-              TableFinalChecks[[j+length(traits)]] == 1 ~ cell_spec(round(TableFinalChecks[[j]],2), color = "green"),
-              TableFinalChecks[[j+length(traits)]] == 0 ~ cell_spec(round(TableFinalChecks[[j]],2), color = "red")
+              TableFinalChecks[[j + length(traits)]] == 1 ~ cell_spec(round(TableFinalChecks[[j]], 2), color = "green"),
+              TableFinalChecks[[j + length(traits)]] == 0 ~ cell_spec(round(TableFinalChecks[[j]], 2), color = "red")
             )
           }
         
-        TableFinalChecks[,-(hide1:hide2)] %>%
+        TableFinalChecks[, -(hide1:hide2)] %>%
           kable("html", escape = F, align = "c") %>%
-          kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F,  position = "left", fixed_thead = T)
+          kable_styling(
+            bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+            full_width = F,
+            position = "left",
+            fixed_thead = T
+          )
       })
       
       output$dwlChecksAllui <- renderUI({
-        if(hideAll$clearAll)
+        if (hideAll$clearAll)
           return()
         else
           downloadButton("dwlChecksAll", "Download")
@@ -2005,16 +2242,16 @@ server <- function (input, output, session) {
           paste0("Checks-", gsub(" ", "_", gsub(":", ".", Sys.time())), ".xlsx")
         },
         content = function(file) {
-          if (hideAll$clearAll) 
+          if (hideAll$clearAll)
             return()
           else
-            quick_xlsx(TableFinalChecksK, file=file, open = FALSE)
+            quick_xlsx(TableFinalChecksK, file = file, open = FALSE)
         }
       )
       
     }
     hideAll$clearAll <- FALSE
-  })   
+  })
   
   observeEvent(input$btnCompareSpecific, {
     req(input$fileUp)
@@ -2023,7 +2260,10 @@ server <- function (input, output, session) {
     req(input$InputEnvSpecific)
     req(input$InputGenotype)
     req(input$InputEnvironment)
-    req(!is.null(input$InputHighTraits) | !is.null(input$InputLowTraits) | !is.null(input$InputRangeTraits))
+    req(
+      !is.null(input$InputHighTraits) |
+        !is.null(input$InputLowTraits) | !is.null(input$InputRangeTraits)
+    )
     Genotype <- input$InputGenotype
     Environment <- input$InputEnvironment
     currentenv <- input$InputEnvSpecific
@@ -2037,16 +2277,21 @@ server <- function (input, output, session) {
     myEnvironment <- myEnvironment()
     dataBLUPSAll <- dataBLUPS()
     dataBLUPSAll %<>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype))
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype))
     dataBLUPS <- dataBLUPSAll %>%
       filter(Environment == myEnvironment) %>%
       select(Environment, Genotype, all_of(currenttraits)) %>%
       arrange(Genotype)
     
-    currenttraits <- currenttraits[colSums(is.na(dataBLUPS[, currenttraits]))!=nrow(dataBLUPS[, currenttraits])] 
-    currenttraithigh <- sort(intersect(currenttraithigh, currenttraits))
-    currenttraitlow <- sort(intersect(currenttraitlow, currenttraits))
-    currenttraitrange <- sort(intersect(currenttraitrange, currenttraits))
+    currenttraits <-
+      currenttraits[colSums(is.na(dataBLUPS[, currenttraits])) != nrow(dataBLUPS[, currenttraits])]
+    currenttraithigh <-
+      sort(intersect(currenttraithigh, currenttraits))
+    currenttraitlow <-
+      sort(intersect(currenttraitlow, currenttraits))
+    currenttraitrange <-
+      sort(intersect(currenttraitrange, currenttraits))
     TraitnoRange <- sort(c(currenttraithigh, currenttraitlow))
     TraitRange <- sort(currenttraitrange)
     Traits <- sort(c(TraitnoRange, TraitRange))
@@ -2055,11 +2300,20 @@ server <- function (input, output, session) {
     for (i in 1:length(currenttraits)) {
       trait <- dataBLUPS %>%
         pull(currenttraits[i])
-      summaryDat <- rbind(summaryDat,data.frame(Trait=currenttraits[i],
-                                                Min=min(trait,na.rm=TRUE),
-                                                Mean=mean(trait,na.rm=TRUE),
-                                                Max=max(trait,na.rm=TRUE),
-                                                stringsAsFactors = FALSE))
+      summaryDat <-
+        rbind(
+          summaryDat,
+          data.frame(
+            Trait = currenttraits[i],
+            Min = min(trait, na.rm =
+                        TRUE),
+            Mean = mean(trait, na.rm =
+                          TRUE),
+            Max = max(trait, na.rm =
+                        TRUE),
+            stringsAsFactors = FALSE
+          )
+        )
     }
     
     if (length(currenttraithigh) != 0) {
@@ -2069,9 +2323,9 @@ server <- function (input, output, session) {
         values[i] <- eval(parse(text = values[i]))
       }
       values <- t(as.numeric(values)) %>%
-        as.data.frame() %>% 
-        as_tibble(.name_repair = "unique") %>% 
-        rename_all(list(~str_replace(., ., TraitnoRange)))
+        as.data.frame() %>%
+        as_tibble(.name_repair = "unique") %>%
+        rename_all(list( ~ str_replace(., ., TraitnoRange)))
     }
     
     if (length(currenttraitlow) != 0) {
@@ -2081,22 +2335,21 @@ server <- function (input, output, session) {
         values[i] <- eval(parse(text = values[i]))
       }
       values <- t(as.numeric(values)) %>%
-        as.data.frame() %>% 
-        as_tibble(.name_repair = "unique") %>% 
-        rename_all(list(~str_replace(., ., TraitnoRange)))
+        as.data.frame() %>%
+        as_tibble(.name_repair = "unique") %>%
+        rename_all(list( ~ str_replace(., ., TraitnoRange)))
     }
     
     if (length(currenttraitrange) != 0) {
       range <- matrix(0, length(currenttraitrange), 2)
       for (i in 1:length(currenttraitrange)) {
         rangeS <- paste0('input$', 'TraitSliderR', i)
-        range[i, ] <- sapply(rangeS, function(x)
+        range[i,] <- sapply(rangeS, function(x)
           eval(parse(text = x)))
       }
     }
-
+    
     if (!is.null(input$InputHighTraits)) {
-      
       output$TableSpecificHighInfo <- renderText({
         req(input$InputHighTraits)
         if (hideAll$clearAll)
@@ -2118,16 +2371,20 @@ server <- function (input, output, session) {
         values <- as.numeric(values)
         values_index <- match(currenttraithigh, TraitnoRange)
         values <- values[values_index]
-        SpecifiedValues <- data.frame(currenttraithigh, round(default, 2), round(values, 2))
-        colnames(SpecifiedValues) <- c("Trait", "Default value", "Choosen value")
-        SpecifiedValues %>% 
+        SpecifiedValues <-
+          data.frame(currenttraithigh, round(default, 2), round(values, 2))
+        colnames(SpecifiedValues) <-
+          c("Trait", "Default value", "Choosen value")
+        SpecifiedValues %>%
           kable(format = "html", escape = F) %>%
-          kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), fixed_thead = TRUE)
+          kable_styling(
+            bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+            fixed_thead = TRUE
+          )
       })
     }
-
+    
     if (!is.null(input$InputLowTraits)) {
-      
       output$TableSpecificLowInfo <- renderText({
         req(input$InputLowTraits)
         if (hideAll$clearAll)
@@ -2151,17 +2408,21 @@ server <- function (input, output, session) {
         values_index <- match(currenttraitlow, TraitnoRange)
         values <- values[values_index]
         
-        SpecifiedValues <- data.frame(currenttraitlow, round(default, 2), round(values, 2))
-        colnames(SpecifiedValues) <- c("Trait", "Default value", "Choosen value")
-        SpecifiedValues %>% 
+        SpecifiedValues <-
+          data.frame(currenttraitlow, round(default, 2), round(values, 2))
+        colnames(SpecifiedValues) <-
+          c("Trait", "Default value", "Choosen value")
+        SpecifiedValues %>%
           kable(format = "html", escape = F) %>%
-          kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), fixed_thead = TRUE)
+          kable_styling(
+            bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+            fixed_thead = TRUE
+          )
       })
     }
     
     
     if (!is.null(input$InputRangeTraits)) {
-      
       output$TableSpecifiedValuesRInfo <- renderText({
         req(input$InputRangeTraits)
         if (hideAll$clearAll)
@@ -2179,21 +2440,26 @@ server <- function (input, output, session) {
         rangeMax <- range[, 2]
         SpecifiedValuesR <-
           data.frame(TraitRange, round(rangeMin, 2), round(rangeMax, 2))
-        colnames(SpecifiedValuesR) <- c("Trait", "Lowest", "Highest")
-        SpecifiedValuesR %>% 
+        colnames(SpecifiedValuesR) <-
+          c("Trait", "Lowest", "Highest")
+        SpecifiedValuesR %>%
           kable(format = "html", escape = F) %>%
-          kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), fixed_thead = TRUE)
+          kable_styling(
+            bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+            fixed_thead = TRUE
+          )
       })
     }
-
+    
     
     if (length(currenttraithigh) != 0) {
       IndexSatisfyHigh <- dataBLUPSHigh <- dataBLUPSAll %>%
         select(Environment, Genotype, all_of(currenttraithigh))
       valuesHigh <- values[, currenttraithigh]
       for (i in 1:length(currenttraithigh)) {
-        j <- i+2
-        IndexSatisfyHigh[, j] <- as.vector(ifelse(dataBLUPSHigh[, j] > as.numeric(valuesHigh[1, i]),1,0))
+        j <- i + 2
+        IndexSatisfyHigh[, j] <-
+          as.vector(ifelse(dataBLUPSHigh[, j] > as.numeric(valuesHigh[1, i]), 1, 0))
       }
     }
     
@@ -2202,8 +2468,9 @@ server <- function (input, output, session) {
         select(Environment, Genotype, all_of(currenttraitlow))
       valuesLow <- values[, currenttraitlow]
       for (i in 1:length(currenttraitlow)) {
-        j <- i+2
-        IndexSatisfyInf[, j]<-as.vector(ifelse(dataBLUPSLow[, j] <= as.numeric(valuesLow[1, i]),1,0))
+        j <- i + 2
+        IndexSatisfyInf[, j] <-
+          as.vector(ifelse(dataBLUPSLow[, j] <= as.numeric(valuesLow[1, i]), 1, 0))
       }
     }
     
@@ -2211,19 +2478,26 @@ server <- function (input, output, session) {
       IndexSatisfyRange <- dataBLUPSRange <- dataBLUPSAll %>%
         select(Environment, Genotype, all_of(currenttraitrange))
       for (i in 1:length(currenttraitrange)) {
-        j <- i+2
-        IndexSatisfyRange[, j] <- as.vector(ifelse((dataBLUPSRange[, j] <= range[i, 2] & dataBLUPSRange[, j] >= range[i, 1]), 1, 0))
+        j <- i + 2
+        IndexSatisfyRange[, j] <-
+          as.vector(ifelse((dataBLUPSRange[, j] <= range[i, 2] &
+                              dataBLUPSRange[, j] >= range[i, 1]),
+                           1,
+                           0
+          ))
       }
     }
     
-    if (length(currenttraithigh) != 0 & length(currenttraitlow) == 0 & length(currenttraitrange) == 0) {
+    if (length(currenttraithigh) != 0 &
+        length(currenttraitlow) == 0 & length(currenttraitrange) == 0) {
       traits <- currenttraithigh
       IndexSatisfy <- dataBLUPSAll %>%
         select(Environment, Genotype) %>%
         left_join(IndexSatisfyHigh) %>%
         select (Environment, Genotype, all_of(traits))
       traitsTest <- paste0(traits, ".Test")
-    } else if (length(currenttraithigh) != 0 & length(currenttraitlow) != 0 & length(currenttraitrange) == 0) {
+    } else if (length(currenttraithigh) != 0 &
+               length(currenttraitlow) != 0 & length(currenttraitrange) == 0) {
       traits <- sort(c(currenttraithigh, currenttraitlow))
       IndexSatisfy <- dataBLUPSAll %>%
         select(Environment, Genotype) %>%
@@ -2231,7 +2505,8 @@ server <- function (input, output, session) {
         left_join(IndexSatisfyInf) %>%
         select (Environment, Genotype, all_of(traits))
       traitsTest <- paste0(traits, ".Test")
-    } else if (length(currenttraithigh) != 0 & length(currenttraitlow) == 0 & length(currenttraitrange) != 0) {
+    } else if (length(currenttraithigh) != 0 &
+               length(currenttraitlow) == 0 & length(currenttraitrange) != 0) {
       traits <- sort(c(currenttraitrange, currenttraithigh))
       IndexSatisfy <- dataBLUPSAll %>%
         select(Environment, Genotype) %>%
@@ -2239,21 +2514,24 @@ server <- function (input, output, session) {
         left_join(IndexSatisfyRange) %>%
         select (Environment, Genotype, all_of(traits))
       traitsTest <- paste0(traits, ".Test")
-    } else if (length(currenttraithigh) == 0 & length(currenttraitlow) == 0 & length(currenttraitrange) != 0) {
+    } else if (length(currenttraithigh) == 0 &
+               length(currenttraitlow) == 0 & length(currenttraitrange) != 0) {
       traits <- currenttraitrange
       IndexSatisfy <- dataBLUPSAll %>%
         select(Environment, Genotype) %>%
         left_join(IndexSatisfyRange) %>%
         select (Environment, Genotype, all_of(traits))
       traitsTest <- paste0(traits, ".Test")
-    } else if (length(currenttraithigh) == 0 & length(currenttraitlow) != 0 & length(currenttraitrange) == 0) {
+    } else if (length(currenttraithigh) == 0 &
+               length(currenttraitlow) != 0 & length(currenttraitrange) == 0) {
       traits <- currenttraitlow
       IndexSatisfy <- dataBLUPSAll %>%
         select(Environment, Genotype) %>%
         left_join(IndexSatisfyInf) %>%
         select (Environment, Genotype, all_of(traits))
       traitsTest <- paste0(currenttraitlow, ".Test")
-    } else if (length(currenttraithigh) == 0 & length(currenttraitlow) != 0 & length(currenttraitrange) != 0) {
+    } else if (length(currenttraithigh) == 0 &
+               length(currenttraitlow) != 0 & length(currenttraitrange) != 0) {
       traits <- sort(c(currenttraitrange, currenttraitlow))
       IndexSatisfy <- dataBLUPSAll %>%
         select(Environment, Genotype) %>%
@@ -2262,7 +2540,8 @@ server <- function (input, output, session) {
         select (Environment, Genotype, all_of(traits))
       traitsTest <- paste0(traits, ".Test")
     } else {
-      traits <- sort(c(currenttraitrange, currenttraithigh, currenttraitlow))
+      traits <-
+        sort(c(currenttraitrange, currenttraithigh, currenttraitlow))
       IndexSatisfy <- dataBLUPSAll %>%
         select(Environment, Genotype) %>%
         left_join(IndexSatisfyHigh) %>%
@@ -2274,7 +2553,7 @@ server <- function (input, output, session) {
     
     IndexSatisfycurrent <- IndexSatisfy %>%
       as_tibble() %>%
-      filter(Environment==myEnvironment) %>%
+      filter(Environment == myEnvironment) %>%
       arrange(Genotype) %>%
       select(-Environment)
     
@@ -2283,10 +2562,10 @@ server <- function (input, output, session) {
     
     dataBLUPSIndex <- dataBLUPS %>%
       select(Environment, Genotype, all_of(traits)) %>%
-      left_join(IndexSatisfycurrent) 
+      left_join(IndexSatisfycurrent)
     
-    if (myEnvironment == "OVERALL" & length(unique(dataBLUPSAll$Environment)) > 1) {
-
+    if (myEnvironment == "OVERALL" &
+        length(unique(dataBLUPSAll$Environment)) > 1) {
       TableFinalSpecific <- dataBLUPSIndex %>%
         arrange(Genotype)
       
@@ -2299,26 +2578,32 @@ server <- function (input, output, session) {
         set_text_color(everywhere, traitsRed, 'red') %>%
         slice(2:n())
       
-      for (i in 1:length(traitsTest)){
-        j <- 2+i
-        k <- nt+j
-        testColor <- as.logical(t(TableFinalSpecificK[,k]) == 1)
+      for (i in 1:length(traitsTest)) {
+        j <- 2 + i
+        k <- nt + j
+        testColor <- as.logical(t(TableFinalSpecificK[, k]) == 1)
         
-        TableFinalSpecificK <- TableFinalSpecificK %>% insert_column(testColor, after = colnames(TableFinalSpecificK)[ncol(TableFinalSpecificK)])
-        colnames(TableFinalSpecificK)[ncol(TableFinalSpecificK)] <- "testColor"
+        TableFinalSpecificK <-
+          TableFinalSpecificK %>% insert_column(testColor, after = colnames(TableFinalSpecificK)[ncol(TableFinalSpecificK)])
+        colnames(TableFinalSpecificK)[ncol(TableFinalSpecificK)] <-
+          "testColor"
         
         TableFinalSpecificK %<>%
-          set_text_color(row=testColor, col = j, "green4")
-        TableFinalSpecificK <- TableFinalSpecificK[,-ncol(TableFinalSpecificK)]
+          set_text_color(row = testColor, col = j, "green4")
+        TableFinalSpecificK <-
+          TableFinalSpecificK[, -ncol(TableFinalSpecificK)]
       }
       
       TableFinalSpecificK <- TableFinalSpecificK %>%
         select(-all_of(traitsTest))
       TableFinalSpecificK <- add_colnames(TableFinalSpecificK) %>%
-        set_number_format(everywhere, colnames(TableFinalSpecificK), fmt_pretty())
-      bold(TableFinalSpecificK)[1,] <- TRUE
-      bottom_border(TableFinalSpecificK)[1,] <- 1
-      bottom_border(TableFinalSpecificK)[nrow(TableFinalSpecificK),] <- 1
+        set_number_format(everywhere,
+                          colnames(TableFinalSpecificK),
+                          fmt_pretty())
+      bold(TableFinalSpecificK)[1, ] <- TRUE
+      bottom_border(TableFinalSpecificK)[1, ] <- 1
+      bottom_border(TableFinalSpecificK)[nrow(TableFinalSpecificK), ] <-
+        1
       
       
     } else {
@@ -2328,88 +2613,98 @@ server <- function (input, output, session) {
       
       traitsRed <- colnames(TableFinalSpecific) %in% traits
       
-      TableFinalSpecificK <- as_huxtable(TableFinalSpecific) %>% 
-        set_text_color(everywhere, traitsRed, 'red') %>% 
+      TableFinalSpecificK <- as_huxtable(TableFinalSpecific) %>%
+        set_text_color(everywhere, traitsRed, 'red') %>%
         slice(2:n())
       
-      for (i in 1:length(traitsTest)){
-        j <- 2+i
-        k <- nt+j
-        testColor <- as.logical(t(TableFinalSpecificK[,k]) == 1)
+      for (i in 1:length(traitsTest)) {
+        j <- 2 + i
+        k <- nt + j
+        testColor <- as.logical(t(TableFinalSpecificK[, k]) == 1)
         
-        TableFinalSpecificK <- TableFinalSpecificK %>% insert_column(testColor, after = colnames(TableFinalSpecificK)[ncol(TableFinalSpecificK)])
-        colnames(TableFinalSpecificK)[ncol(TableFinalSpecificK)] <- "testColor"
+        TableFinalSpecificK <-
+          TableFinalSpecificK %>% insert_column(testColor, after = colnames(TableFinalSpecificK)[ncol(TableFinalSpecificK)])
+        colnames(TableFinalSpecificK)[ncol(TableFinalSpecificK)] <-
+          "testColor"
         
         TableFinalSpecificK %<>%
-          set_text_color(row=testColor, col = j, "green4")
-        TableFinalSpecificK <- TableFinalSpecificK[,-ncol(TableFinalSpecificK)]
+          set_text_color(row = testColor, col = j, "green4")
+        TableFinalSpecificK <-
+          TableFinalSpecificK[, -ncol(TableFinalSpecificK)]
       }
       
-      TableFinalSpecificK <- TableFinalSpecificK %>% 
-        select(-all_of(traitsTest)) 
-      TableFinalSpecificK <- add_colnames(TableFinalSpecificK) %>% 
-        set_number_format(everywhere, colnames(TableFinalSpecificK), fmt_pretty())
-      bold(TableFinalSpecificK)[1,] <- TRUE
-      bottom_border(TableFinalSpecificK)[1,] <- 1
-      bottom_border(TableFinalSpecificK)[nrow(TableFinalSpecificK),] <- 1
-
+      TableFinalSpecificK <- TableFinalSpecificK %>%
+        select(-all_of(traitsTest))
+      TableFinalSpecificK <- add_colnames(TableFinalSpecificK) %>%
+        set_number_format(everywhere,
+                          colnames(TableFinalSpecificK),
+                          fmt_pretty())
+      bold(TableFinalSpecificK)[1, ] <- TRUE
+      bottom_border(TableFinalSpecificK)[1, ] <- 1
+      bottom_border(TableFinalSpecificK)[nrow(TableFinalSpecificK), ] <-
+        1
+      
       
     }
     
-    if (myEnvironment == "OVERALL" )  {
-      
+    if (myEnvironment == "OVERALL")  {
       output$TableSatisfySpecificEnvSupInfo <- renderText({
         if (hideAll$clearAll)
           return()
-      }) 
+      })
     }
     
     if (length(Traits) != 0) {
-      
       output$TableSatisfySpecific <- renderText({
         if (hideAll$clearAll)
           return()
         else
-          for(i in 1:length(traits)){
-            j <- i+2
+          for (i in 1:length(traits)) {
+            j <- i + 2
             TableFinalSpecific[[j]] <- case_when(
-              TableFinalSpecific[[j+length(traits)]] == 1 ~ cell_spec(round(TableFinalSpecific[[j]],2), color = "green"),
-              TableFinalSpecific[[j+length(traits)]] == 0 ~ cell_spec(round(TableFinalSpecific[[j]],2), color = "red")
+              TableFinalSpecific[[j + length(traits)]] == 1 ~ cell_spec(round(TableFinalSpecific[[j]], 2), color = "green"),
+              TableFinalSpecific[[j + length(traits)]] == 0 ~ cell_spec(round(TableFinalSpecific[[j]], 2), color = "red")
             )
           }
-        TableFinalSpecific[,-(hide1:hide2)] %>%
+        TableFinalSpecific[, -(hide1:hide2)] %>%
           kable("html", escape = F, align = "c") %>%
-          kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F,  position = "left", fixed_thead = T)
+          kable_styling(
+            bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+            full_width = F,
+            position = "left",
+            fixed_thead = T
+          )
         
-      })  
+      })
       
       output$dwlSpecificAllui <- renderUI({
-        if(hideAll$clearAll)
+        if (hideAll$clearAll)
           return()
         else
           downloadButton("dwlSpecificAll", "Download")
       })
       
       output$dwlSpecificAll <- downloadHandler(
-        
         filename = function() {
           paste0("Specific-Values-", gsub(" ", "_", gsub(":", ".", Sys.time())), ".xlsx")
         },
         content = function(file) {
-          quick_xlsx(TableFinalSpecificK, file=file, open = FALSE)
+          quick_xlsx(TableFinalSpecificK,
+                     file = file,
+                     open = FALSE)
         }
       )
     }
     hideAll$clearAll <- FALSE
     
-  })  
+  })
   
   observeEvent(input$btnBaseIndex, {
     req(input$fileUp)
     req(input$selSheetBLUPS)
     req(input$InputAnalysisTraits)
     req(input$InputBaseTraits)
-    req(input$InputEnvBaseIndex) 
+    req(input$InputEnvBaseIndex)
     req(input$InputGenotype)
     req(input$InputEnvironment)
     Genotype <- input$InputGenotype
@@ -2422,13 +2717,15 @@ server <- function (input, output, session) {
     myEnvironment <- myEnvironment()
     dataBLUPSAll <- dataBLUPS()
     dataBLUPSAll %<>%
-      rename(Environment = all_of(Environment), Genotype = all_of(Genotype))
+      rename(Environment = all_of(Environment),
+             Genotype = all_of(Genotype))
     dataBLUPS <- dataBLUPSAll %>%
       filter(Environment == myEnvironment) %>%
       select(Environment, Genotype, all_of(currenttraits)) %>%
       arrange(Genotype)
     
-    currenttraits <- currenttraits[colSums(is.na(dataBLUPS[, currenttraits]))!=nrow(dataBLUPS[, currenttraits])] 
+    currenttraits <-
+      currenttraits[colSums(is.na(dataBLUPS[, currenttraits])) != nrow(dataBLUPS[, currenttraits])]
     currenttraitsBase <- paste0(currenttraits, ".Base")
     
     if (length(currenttraits) != 0) {
@@ -2439,14 +2736,13 @@ server <- function (input, output, session) {
       }
       
       values <- t(as.numeric(values)) %>%
-        as.data.frame() %>% 
+        as.data.frame() %>%
         as_tibble(.name_repair = "unique") %>%
-        rename_all(list(~str_replace(., ., currenttraits)))
+        rename_all(list( ~ str_replace(., ., currenttraits)))
     }
     
     
     if (length(currenttraits) != 0) {
-      
       output$TableBaseInfo <- renderText({
         if (hideAll$clearAll)
           return()
@@ -2454,51 +2750,60 @@ server <- function (input, output, session) {
           "Traits are standardized and weighted, their sum is the Base Index (BI)."
       })
       
-      values <- as.numeric(values) 
+      values <- as.numeric(values)
       IndexSatisfyBase  <- dataBLUPS %>%
-        select(Environment, Genotype, all_of(currenttraits)) %>% 
-        as.data.frame() %>% 
+        select(Environment, Genotype, all_of(currenttraits)) %>%
+        as.data.frame() %>%
         as_tibble()
       
-      IndexSatisfyBaseTraits <- IndexSatisfyBase %>% 
-        select(-c(Environment, Genotype))  %>% 
-        scale(., center = FALSE, scale = apply(., 2, sd, na.rm = TRUE)) %>% 
+      IndexSatisfyBaseTraits <- IndexSatisfyBase %>%
+        select(-c(Environment, Genotype))  %>%
+        scale(.,
+              center = FALSE,
+              scale = apply(., 2, sd, na.rm = TRUE)) %>%
         as_tibble()
       
       
-      if (ncol(IndexSatisfyBaseTraits)>1) {
-        IndexSatisfyBaseTraits <- IndexSatisfyBaseTraits[,colSums(is.na(IndexSatisfyBaseTraits))!=nrow(IndexSatisfyBaseTraits)] %>% 
+      if (ncol(IndexSatisfyBaseTraits) > 1) {
+        IndexSatisfyBaseTraits <-
+          IndexSatisfyBaseTraits[, colSums(is.na(IndexSatisfyBaseTraits)) != nrow(IndexSatisfyBaseTraits)] %>%
           as.data.frame()
-      } 
-      currenttraits <- currenttraits[colSums(is.na(IndexSatisfyBaseTraits[, currenttraits]))!=nrow(IndexSatisfyBaseTraits[, currenttraits])]
+      }
+      currenttraits <-
+        currenttraits[colSums(is.na(IndexSatisfyBaseTraits[, currenttraits])) !=
+                        nrow(IndexSatisfyBaseTraits[, currenttraits])]
       colnames(IndexSatisfyBaseTraits) <- currenttraits
       
       currenttraitsBase <- paste0(currenttraits, ".weighted")
       
-      IndexSatisfyBaseTraits <- t(t(IndexSatisfyBaseTraits) * values) %>% 
+      IndexSatisfyBaseTraits <-
+        t(t(IndexSatisfyBaseTraits) * values) %>%
         as.data.frame()
       
-      IndexSatisfyBaseEG <- IndexSatisfyBase %>% 
-        select(Environment, Genotype)  
+      IndexSatisfyBaseEG <- IndexSatisfyBase %>%
+        select(Environment, Genotype)
       
-      IndexSatisfyBase.weighted <- bind_cols(IndexSatisfyBaseEG, IndexSatisfyBaseTraits) 
+      IndexSatisfyBase.weighted <-
+        bind_cols(IndexSatisfyBaseEG, IndexSatisfyBaseTraits)
       
-      TableFinalBaseIndex <- dataBLUPS %>% 
-        select(Genotype) %>% 
-        left_join(IndexSatisfyBase.weighted, by="Genotype") %>% 
+      TableFinalBaseIndex <- dataBLUPS %>%
+        select(Genotype) %>%
+        left_join(IndexSatisfyBase.weighted, by = "Genotype") %>%
         select(Environment, Genotype, everything())
       
-      colnames(TableFinalBaseIndex)[-c(1,2)] <- currenttraitsBase
+      colnames(TableFinalBaseIndex)[-c(1, 2)] <- currenttraitsBase
       
-      TableFinalBaseIndex  %<>%  
-        mutate(Base.Index=rowSums(.[,-c(1,2)])) %>% 
-        arrange(desc(Base.Index)) %>% 
-        mutate(Rank = 1:nrow(.)) %>% 
-        left_join(IndexSatisfyBase %>% 
-                    select(-Environment)
-        ) %>% 
-        select(-all_of(currenttraitsBase)) %>% 
-        select(Environment, Genotype, all_of(currenttraits), everything())
+      TableFinalBaseIndex  %<>%
+        mutate(Base.Index = rowSums(.[, -c(1, 2)])) %>%
+        arrange(desc(Base.Index)) %>%
+        mutate(Rank = 1:nrow(.)) %>%
+        left_join(IndexSatisfyBase %>%
+                    select(-Environment)) %>%
+        select(-all_of(currenttraitsBase)) %>%
+        select(Environment,
+               Genotype,
+               all_of(currenttraits),
+               everything())
       
       
       output$TableBaseIndex <- renderText({
@@ -2507,30 +2812,36 @@ server <- function (input, output, session) {
         else
           TableFinalBaseIndex %>%
           kable("html", escape = F, align = "c") %>%
-          kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F,  position = "left", fixed_thead = T)
+          kable_styling(
+            bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+            full_width = F,
+            position = "left",
+            fixed_thead = T
+          )
         
-      }) 
+      })
       
       output$dwlBaseIndexAllui <- renderUI({
-        if(hideAll$clearAll)
+        if (hideAll$clearAll)
           return()
         else
           downloadButton("dwlBaseIndexAll", "Download")
       })
       
       output$dwlBaseIndexAll <- downloadHandler(
-        
         filename = function() {
           paste0("Base-Index-", gsub(" ", "_", gsub(":", ".", Sys.time())), ".xlsx")
         },
         content = function(file) {
-          quick_xlsx(TableFinalBaseIndex, file=file, open = FALSE)
+          quick_xlsx(TableFinalBaseIndex,
+                     file = file,
+                     open = FALSE)
         }
       )
     }
     
     hideAll$clearAll <- FALSE
     
-  })   
+  })
   
-}  
+}

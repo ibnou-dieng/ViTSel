@@ -28,6 +28,8 @@ to identify the best genotypes.
   visualization environment to facilitate/automatize the process using
   index selection
 
+<br>
+
 ## Input Data
 
 - The input data are entry means (often BLUPs) derived from statistical
@@ -35,15 +37,25 @@ to identify the best genotypes.
 
 <img src="www/dataInput.png" align="left" />
 
+<br>
+
 ## Selected screenshots
 
 <img src="www/biplot.png" align="left" />
 
+<br> <br>
+
 <img src="www/compareChecks.png" align="left" />
+
+<br> <br>
 
 <img src="www/baseIndex.png" align="left" />
 
+<br> <br>
+
 <img src="www/about.png" align="left" />
+
+<br> <br>
 
 ## Authors
 

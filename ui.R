@@ -10,13 +10,13 @@ library(magrittr)
 library(huxtable)
 library(tidyverse)
 
-ui <-div(
-  tags$head(
-    tags$style(HTML(".shiny-output-error-validation {color: green;}"))
-  ),
+ui <- div(
+  tags$head(tags$style(
+    HTML(".shiny-output-error-validation {color: green;}")
+  )),
   class = "navbar1",
   navbarPage(
-    title=div(tags$b("ViTSel"), style = "color:#F26522"), 
+    title = div(tags$b("ViTSel"), style = "color:#F26522"),
     windowTitle = "ViTSel",
     theme = "mycustom.css",
     
@@ -29,15 +29,17 @@ ui <-div(
                    div(
                      tags$p(
                        "The input data is the table of performance of genotypes (BLUPS or BLUES) stacked by environment.
-                       If the combined analysis is included, its environment must be coded", style = "display: inline;",
+                       If the combined analysis is included, its environment must be coded",
+                       style = "display: inline;",
                        tags$b("OVERALL.", style = "color:#F26522")
                      )
                    ),
                    br(),
-                   tags$div("See example of an input data:",
-                            br(),
-                            downloadButton("dwlExample", "Example"),
-                            style = "display:inline-block"
+                   tags$div(
+                     "See example of an input data:",
+                     br(),
+                     downloadButton("dwlExample", "Example"),
+                     style = "display:inline-block"
                    ),
                    hr(),
                    fileInput(
@@ -50,7 +52,13 @@ ui <-div(
                    uiOutput("outGenotype"),
                    conditionalPanel(
                      condition = "output.fileUploaded",
-                     selectInput("InputEnvironment", "Select Environment", choices = "", selected = "")),
+                     selectInput(
+                       "InputEnvironment",
+                       "Select Environment",
+                       choices = "",
+                       selected = ""
+                     )
+                   ),
                    uiOutput("outTraitAnalysis"),
                    actionButton("btnPreview", "View Data", icon = icon("table"))
                  )
@@ -71,75 +79,67 @@ ui <-div(
                    style = "color:white;",
                    sidebarPanel(
                      tags$style(".well {background-color:black;}"),
-                     tags$p(
-                       "Genotype-by-environment biplots"
-                     ),
+                     tags$p("Genotype-by-environment biplots"),
                      hr(),
                      uiOutput("outseltraitBiplot"),
                      uiOutput("outDimX"),
                      uiOutput("outDimY")
                    )
                  ),
-                 mainPanel(tabsetPanel(type =
-                                         "tabs",
-                                       tabPanel(
-                                         "Biplot",
-                                         box(
-                                           div("Results of this visualization may be misleading in the presence of missing data.",
-                                               style = "color:gray"
-                                           ),
-                                           conditionalPanel(
-                                             condition = "(input.InputDimY.length==0)",
-                                             div("You need more than one environment (with or without the combined analysis).",
-                                                 style = "color:gray")
-                                           ),
-                                           status = "primary",
-                                           solidHeader = TRUE,
-                                           width = 12
-                                         ),
-                                         br(),
-                                         tags$div(
-                                           uiOutput("dwlBiPlotui"),
-                                           style = "display:inline-block"
-                                         ),
-                                         plotOutput("BiPlot")
-                                         
-                                       ),
-                                       tabPanel(
-                                         "Codes for Environment",
-                                         htmlOutput("CodesEnvBiplot")
-                                       ),
-                                       tabPanel(
-                                         "Codes for Genotype",
-                                         htmlOutput("CodesGenoBiPlot")
-                                       )
+                 mainPanel(tabsetPanel(
+                   type =
+                     "tabs",
+                   tabPanel(
+                     "Biplot",
+                     box(
+                       div(
+                         "Results of this visualization may be misleading in the presence of missing data.",
+                         style = "color:gray"
+                       ),
+                       conditionalPanel(
+                         condition = "(input.InputDimY.length==0)",
+                         div(
+                           "You need more than one environment (with or without the combined analysis).",
+                           style = "color:gray"
+                         )
+                       ),
+                       status = "primary",
+                       solidHeader = TRUE,
+                       width = 12
+                     ),
+                     br(),
+                     tags$div(uiOutput("dwlBiPlotui"),
+                              style = "display:inline-block"),
+                     plotOutput("BiPlot")
+                     
+                   ),
+                   tabPanel("Codes for Environment",
+                            htmlOutput("CodesEnvBiplot")),
+                   tabPanel("Codes for Genotype",
+                            htmlOutput("CodesGenoBiPlot"))
                  ))
                )),
       
       tabPanel("BoxPlot",
                sidebarLayout(
-                 tags$div(
-                   style = "color:white;",
-                   sidebarPanel(
-                     tags$style(".well {background-color:black;}"),
-                     tags$p("Boxplots of traits by environment"),
-                     hr(),
-                     uiOutput("outseltraitBox")
-                   )
-                 ),
+                 tags$div(style = "color:white;",
+                          sidebarPanel(
+                            tags$style(".well {background-color:black;}"),
+                            tags$p("Boxplots of traits by environment"),
+                            hr(),
+                            uiOutput("outseltraitBox")
+                          )),
                  mainPanel(tabsetPanel(
                    type = "tabs",
-                   tabPanel("Boxplot",
-                            tags$div(
-                              uiOutput("dwlBoxPlotui"),
-                              style =
-                                "display:inline-block"
-                            ),
-                            plotOutput("BoxPlot")),
                    tabPanel(
-                     "Codes for Environment",
-                     htmlOutput("CodesEnvBoxPlot")
-                   )
+                     "Boxplot",
+                     tags$div(uiOutput("dwlBoxPlotui"),
+                              style =
+                                "display:inline-block"),
+                     plotOutput("BoxPlot")
+                   ),
+                   tabPanel("Codes for Environment",
+                            htmlOutput("CodesEnvBoxPlot"))
                  ))
                )),
       tabPanel("HeatMap",
@@ -153,32 +153,30 @@ ui <-div(
                           )),
                  mainPanel(tabsetPanel(
                    type = "tabs",
-                   tabPanel("Heatmap",
-                            fluidRow(
-                              column(width = 2,
-                                     h2(""),
-                                     align = "left"),
-                              column(
-                                width = 8,
-                                align = "center",
-                                img(src = "heatmap.png", width = "100%")
-                              ),
-                              column(width = 2,
-                                     h2(""),
-                                     align = "right")),
-                            br(),
-                            htmlOutput("TableHeatmap")
-                            
-                            
-                   ),
                    tabPanel(
-                     "Codes for Environment",
-                     htmlOutput("CodesEnvHeat")
+                     "Heatmap",
+                     fluidRow(
+                       column(width = 2,
+                              h2(""),
+                              align = "left"),
+                       column(
+                         width = 8,
+                         align = "center",
+                         img(src = "heatmap.png", width = "100%")
+                       ),
+                       column(width = 2,
+                              h2(""),
+                              align = "right")
+                     ),
+                     br(),
+                     htmlOutput("TableHeatmap")
+                     
+                     
                    ),
-                   tabPanel(
-                     "Codes for Genotype",
-                     htmlOutput("CodesGenoHeat")
-                   )
+                   tabPanel("Codes for Environment",
+                            htmlOutput("CodesEnvHeat")),
+                   tabPanel("Codes for Genotype",
+                            htmlOutput("CodesGenoHeat"))
                  ))
                )),
       
@@ -193,26 +191,21 @@ ui <-div(
                           )),
                  mainPanel(tabsetPanel(
                    type = "tabs",
-                   tabPanel("Scatterplot",
-                            uiOutput("OneTraitInfo"),
-                            br(),
-                            tags$div(
-                              uiOutput("dwlScatterPlotui"),
+                   tabPanel(
+                     "Scatterplot",
+                     uiOutput("OneTraitInfo"),
+                     br(),
+                     tags$div(uiOutput("dwlScatterPlotui"),
                               style =
-                                "display:inline-block"
-                            ),
-                            br(),
-                            plotOutput("ScatterPlot")
+                                "display:inline-block"),
+                     br(),
+                     plotOutput("ScatterPlot")
                    ),
                    
-                   tabPanel(
-                     "Codes for Environment",
-                     htmlOutput("CodesEnvScater")
-                   ),
-                   tabPanel(
-                     "Codes for Genotype",
-                     htmlOutput("CodesGenoScater")
-                   )
+                   tabPanel("Codes for Environment",
+                            htmlOutput("CodesEnvScater")),
+                   tabPanel("Codes for Genotype",
+                            htmlOutput("CodesGenoScater"))
                  ))
                ))
     ),
@@ -220,242 +213,194 @@ ui <-div(
     navbarMenu(
       "Compare Genotypes",
       
-      tabPanel(
-        "Checks",
-        sidebarLayout(
-          tags$div(
-            style = "color:white;",
-            sidebarPanel(
-              tags$style(".well {background-color:black;}"),
-              uiOutput("outEnvChecks"),
-              uiOutput("outInputChecks"),
-              uiOutput("outtraitSelHighChecks"),
-              uiOutput("outtraitSelLowChecks"),
-              uiOutput("outSliderRangeCheks"),
-              uiOutput("outtraitSliderChecksR"),
-              hr(),
-              actionButton("btnCompareChecks", "Run", icon = icon("play-circle"))
-            )
-          ),
-          mainPanel(fluidRow(
-            box(
-              conditionalPanel(
-                
-                condition = "input.InputHighTraitsChecks!=='undefined' && input.InputHighTraitsChecks.length>0",
-                htmlOutput("TableChecksHighInfo"),
-              ),
-              conditionalPanel(
-                
-                condition = "input.InputHighTraitsChecks!=='undefined' && input.InputHighTraitsChecks.length>0",
-                htmlOutput("TableChecksHigh"),
-              ),
-              status = "primary",
-              solidHeader = TRUE,
-              width = 12
-            ),
-            br(),
-            box(
-              conditionalPanel(
-                condition = "input.InputLowTraitsChecks!=='undefined' && input.InputLowTraitsChecks.length>0",
-                
-                htmlOutput("TableChecksLowInfo"),
-              ),
-              conditionalPanel(
-                
-                condition = "input.InputLowTraitsChecks!=='undefined' && input.InputLowTraitsChecks.length>0",
-                htmlOutput("TableChecksLow"),
-              ),
-              status = "primary",
-              solidHeader = TRUE,
-              width = 12
-            ),
-            br(),
-            box(
-              conditionalPanel(
-                condition = "input.InputRangeTraitsChecks!=='undefined' && input.InputRangeTraitsChecks.length>0",
-                htmlOutput("TableChecksRInfo"),
-              ),
-              conditionalPanel(
-                condition = "input.InputRangeTraitsChecks!=='undefined' && input.InputRangeTraitsChecks.length>0",
-                htmlOutput("TableChecksR"),
-              ),
-              status = "primary",
-              solidHeader = TRUE,
-              width = 12
-            ),
-            br(),
-            box(
-              conditionalPanel(
-                condition = "input.InputEnvChecks === 'OVERALL'",
-                htmlOutput("TableSatisfyChecksEnvSupInfo")
-              ),
-              br(),
-              tags$div(
-                uiOutput("dwlChecksAllui"),
-                style =
-                  "display:inline-block"
-              ),
-              br(),
-              br(),
-              conditionalPanel(
-                condition = "(input.InputHighTraitsChecks!=='undefined' && input.InputHighTraitsChecks.length>0) || (input.InputLowTraitsChecks!=='undefined' && input.InputLowTraitsChecks.length>0) || (input.InputRangeTraitsChecks!=='undefined' && input.InputRangeTraitsChecks.length>0)",
-                htmlOutput("TableSatisfyChecks")
-              ),
-              status = "primary",
-              solidHeader = TRUE,
-              width = 12
-            )
-          ))
-        )),
-      tabPanel(
-        "Specificied values",
-        sidebarLayout(
-          tags$div(
-            style = "color:white;",
-            sidebarPanel(
-              tags$style(".well {background-color:black;}"),
-              uiOutput("outEnvSpecific"),
-              uiOutput("outSliderSpecific"),
-              uiOutput("outtraitSelLow"),
-              uiOutput("outSliderRange"),
-              uiOutput("outtraitSlider"),
-              uiOutput("outtraitSliderR"),
-              hr(),
-              actionButton("btnCompareSpecific", "Run", icon = icon("play-circle"))
-            )
-          ),
-          mainPanel(fluidRow(
-            box(
-              conditionalPanel(
-                
-                condition = "input.InputHighTraits!=='undefined' && input.InputHighTraits.length>0",
-                htmlOutput("TableSpecificHighInfo")
-              ),
-              conditionalPanel(
-                
-                condition = "input.InputHighTraits!=='undefined' && input.InputHighTraits.length>0",
-                htmlOutput("TableSpecifiedValuesHigh") 
-              ),
-              status = "primary",
-              solidHeader = TRUE,
-              width = 12
-            ),
-            br(),
-            
-            box(
-              conditionalPanel(
-                
-                condition = "input.InputLowTraits!=='undefined' && input.InputLowTraits.length>0",
-                htmlOutput("TableSpecificLowInfo")
-              ),
-              conditionalPanel(
-                
-                condition = "input.InputLowTraits!=='undefined' && input.InputLowTraits.length>0",
-                htmlOutput("TableSpecifiedValuesLow") 
-              ),
-              status = "primary",
-              solidHeader = TRUE,
-              width = 12
-            ),
-            br(),
-            
-            
-            
-            box(
-              conditionalPanel(
-                condition = "input.InputRangeTraits!=='undefined' && input.InputRangeTraits.length>0",
-                htmlOutput("TableSpecifiedValuesRInfo")
-              ),
-              conditionalPanel(
-                condition = "input.InputRangeTraits!=='undefined' && input.InputRangeTraits.length>0",
-                htmlOutput("TableSpecifiedValuesR")
-              ),
-              status = "primary",
-              solidHeader = TRUE,
-              width = 12
-            ),
-            br(),
-            box(
-              conditionalPanel(
-                condition = "input.InputEnvSpecific==='OVERALL'",
-                htmlOutput("TableSatisfySpecificEnvSupInfo")
-              ),
-              br(),
-              tags$div(
-                uiOutput("dwlSpecificAllui"),
-                style = "display:inline-block"
-              ),
-              br(),
-              br(),
-              conditionalPanel(
-                condition = "(input.InputHighTraits!=='undefined' && input.InputHighTraits.length>0) || (input.InputLowTraits!=='undefined' && input.InputLowTraits.length>0) || (input.InputRangeTraits!=='undefined' && input.InputRangeTraits.length>0)",
-                htmlOutput("TableSatisfySpecific")
-              ),
-              status = "primary",
-              solidHeader = TRUE,
-              width = 12
-            )
-          ))
-        )
-      ),
+      tabPanel("Checks",
+               sidebarLayout(
+                 tags$div(
+                   style = "color:white;",
+                   sidebarPanel(
+                     tags$style(".well {background-color:black;}"),
+                     uiOutput("outEnvChecks"),
+                     uiOutput("outInputChecks"),
+                     uiOutput("outtraitSelHighChecks"),
+                     uiOutput("outtraitSelLowChecks"),
+                     uiOutput("outSliderRangeCheks"),
+                     uiOutput("outtraitSliderChecksR"),
+                     hr(),
+                     actionButton("btnCompareChecks", "Run", icon = icon("play-circle"))
+                   )
+                 ),
+                 mainPanel(fluidRow(
+                   box(
+                     conditionalPanel(condition = "input.InputHighTraitsChecks!=='undefined' && input.InputHighTraitsChecks.length>0",
+                                      htmlOutput("TableChecksHighInfo"),),
+                     conditionalPanel(condition = "input.InputHighTraitsChecks!=='undefined' && input.InputHighTraitsChecks.length>0",
+                                      htmlOutput("TableChecksHigh"),),
+                     status = "primary",
+                     solidHeader = TRUE,
+                     width = 12
+                   ),
+                   br(),
+                   box(
+                     conditionalPanel(condition = "input.InputLowTraitsChecks!=='undefined' && input.InputLowTraitsChecks.length>0",
+                                      
+                                      htmlOutput("TableChecksLowInfo"),),
+                     conditionalPanel(condition = "input.InputLowTraitsChecks!=='undefined' && input.InputLowTraitsChecks.length>0",
+                                      htmlOutput("TableChecksLow"),),
+                     status = "primary",
+                     solidHeader = TRUE,
+                     width = 12
+                   ),
+                   br(),
+                   box(
+                     conditionalPanel(condition = "input.InputRangeTraitsChecks!=='undefined' && input.InputRangeTraitsChecks.length>0",
+                                      htmlOutput("TableChecksRInfo"),),
+                     conditionalPanel(condition = "input.InputRangeTraitsChecks!=='undefined' && input.InputRangeTraitsChecks.length>0",
+                                      htmlOutput("TableChecksR"),),
+                     status = "primary",
+                     solidHeader = TRUE,
+                     width = 12
+                   ),
+                   br(),
+                   box(
+                     conditionalPanel(condition = "input.InputEnvChecks === 'OVERALL'",
+                                      htmlOutput("TableSatisfyChecksEnvSupInfo")),
+                     br(),
+                     tags$div(uiOutput("dwlChecksAllui"),
+                              style =
+                                "display:inline-block"),
+                     br(),
+                     br(),
+                     conditionalPanel(condition = "(input.InputHighTraitsChecks!=='undefined' && input.InputHighTraitsChecks.length>0) || (input.InputLowTraitsChecks!=='undefined' && input.InputLowTraitsChecks.length>0) || (input.InputRangeTraitsChecks!=='undefined' && input.InputRangeTraitsChecks.length>0)",
+                                      htmlOutput("TableSatisfyChecks")),
+                     status = "primary",
+                     solidHeader = TRUE,
+                     width = 12
+                   )
+                 ))
+               )),
+      tabPanel("Specificied values",
+               sidebarLayout(
+                 tags$div(
+                   style = "color:white;",
+                   sidebarPanel(
+                     tags$style(".well {background-color:black;}"),
+                     uiOutput("outEnvSpecific"),
+                     uiOutput("outSliderSpecific"),
+                     uiOutput("outtraitSelLow"),
+                     uiOutput("outSliderRange"),
+                     uiOutput("outtraitSlider"),
+                     uiOutput("outtraitSliderR"),
+                     hr(),
+                     actionButton("btnCompareSpecific", "Run", icon = icon("play-circle"))
+                   )
+                 ),
+                 mainPanel(fluidRow(
+                   box(
+                     conditionalPanel(condition = "input.InputHighTraits!=='undefined' && input.InputHighTraits.length>0",
+                                      htmlOutput("TableSpecificHighInfo")),
+                     conditionalPanel(condition = "input.InputHighTraits!=='undefined' && input.InputHighTraits.length>0",
+                                      htmlOutput("TableSpecifiedValuesHigh")),
+                     status = "primary",
+                     solidHeader = TRUE,
+                     width = 12
+                   ),
+                   br(),
+                   
+                   box(
+                     conditionalPanel(condition = "input.InputLowTraits!=='undefined' && input.InputLowTraits.length>0",
+                                      htmlOutput("TableSpecificLowInfo")),
+                     conditionalPanel(condition = "input.InputLowTraits!=='undefined' && input.InputLowTraits.length>0",
+                                      htmlOutput("TableSpecifiedValuesLow")),
+                     status = "primary",
+                     solidHeader = TRUE,
+                     width = 12
+                   ),
+                   br(),
+                   
+                   
+                   
+                   box(
+                     conditionalPanel(condition = "input.InputRangeTraits!=='undefined' && input.InputRangeTraits.length>0",
+                                      htmlOutput("TableSpecifiedValuesRInfo")),
+                     conditionalPanel(condition = "input.InputRangeTraits!=='undefined' && input.InputRangeTraits.length>0",
+                                      htmlOutput("TableSpecifiedValuesR")),
+                     status = "primary",
+                     solidHeader = TRUE,
+                     width = 12
+                   ),
+                   br(),
+                   box(
+                     conditionalPanel(condition = "input.InputEnvSpecific==='OVERALL'",
+                                      htmlOutput("TableSatisfySpecificEnvSupInfo")),
+                     br(),
+                     tags$div(uiOutput("dwlSpecificAllui"),
+                              style = "display:inline-block"),
+                     br(),
+                     br(),
+                     conditionalPanel(condition = "(input.InputHighTraits!=='undefined' && input.InputHighTraits.length>0) || (input.InputLowTraits!=='undefined' && input.InputLowTraits.length>0) || (input.InputRangeTraits!=='undefined' && input.InputRangeTraits.length>0)",
+                                      htmlOutput("TableSatisfySpecific")),
+                     status = "primary",
+                     solidHeader = TRUE,
+                     width = 12
+                   )
+                 ))
+               )),
       
-      tabPanel(
-        "Base Index",
-        sidebarLayout(
-          tags$div(
-            style = "color:white;",
-            sidebarPanel(
-              tags$style(".well {background-color:black;}"),
-              uiOutput("outEnvBaseIndex"),
-              uiOutput("outTraitsBaseIndex"),
-              uiOutput("outTraitsBaseIndexSlider"),
-              hr(),
-              actionButton("btnBaseIndex", "Run", icon = icon("play-circle"))
-            )
-          ),
-          mainPanel(fluidRow(
-            box(
-              conditionalPanel(
-                condition = "(input.InputBaseTraits!=='undefined' && input.InputBaseTraits.length>0)",
-                htmlOutput("TableBaseInfo")
-              ),
-              br(),
-              tags$div(
-                uiOutput("dwlBaseIndexAllui"),
-                style = "display:inline-block"
-              ),
-              br(),
-              br(),
-              conditionalPanel(
-                condition = "(input.InputRankTraits!=='undefined' && input.InputRankTraits.length>0)",
-                htmlOutput("TableBaseIndex")
-              ),
-              status = "primary",
-              solidHeader = TRUE,
-              width = 12
-            )
-          ))
-        )
-      )
-    ),   
+      tabPanel("Base Index",
+               sidebarLayout(
+                 tags$div(
+                   style = "color:white;",
+                   sidebarPanel(
+                     tags$style(".well {background-color:black;}"),
+                     uiOutput("outEnvBaseIndex"),
+                     uiOutput("outTraitsBaseIndex"),
+                     uiOutput("outTraitsBaseIndexSlider"),
+                     hr(),
+                     actionButton("btnBaseIndex", "Run", icon = icon("play-circle"))
+                   )
+                 ),
+                 mainPanel(fluidRow(
+                   box(
+                     conditionalPanel(condition = "(input.InputBaseTraits!=='undefined' && input.InputBaseTraits.length>0)",
+                                      htmlOutput("TableBaseInfo")),
+                     br(),
+                     tags$div(uiOutput("dwlBaseIndexAllui"),
+                              style = "display:inline-block"),
+                     br(),
+                     br(),
+                     conditionalPanel(condition = "(input.InputRankTraits!=='undefined' && input.InputRankTraits.length>0)",
+                                      htmlOutput("TableBaseIndex")),
+                     status = "primary",
+                     solidHeader = TRUE,
+                     width = 12
+                   )
+                 ))
+               ))
+    ),
     
     tabPanel(
       "About",
-     
+      
       fluidRow(
         column(width = 4, h2(""), align = "left"),
         column(width = 4,
-               img(src = "cgiar.png", align="left")),
+               img(src = "cgiar.png", align = "left")),
         column(width = 4, h2(""), align = "left")
       ),
       br(),
       fluidRow(
         column(width = 4,
-               img(src = "AfricaRice.png", align="left", width = "58%")),
+               img(
+                 src = "AfricaRice.png", align = "left", width = "58%"
+               )),
+        column(
+          width = 4,
+          img(src = "CIMMYT_new.png", align = "left", width = "62.5%")
+        ),
         column(width = 4,
-               img(src = "CIMMYT_new.png", align="left", width = "62.5%")),
-        column(width = 4,
-               img(src = "iita.png", align="left", width = "41%"))
+               img(
+                 src = "iita.png", align = "left", width = "41%"
+               ))
         
       ),
       
@@ -510,12 +455,9 @@ ui <-div(
         column(width = 4,
                h2(""),
                align = "left"),
-        column(
-          width = 4,
-          align = "left",
-          img(src = "EiB.png")
-          
-        ),
+        column(width = 4,
+               align = "left",
+               img(src = "EiB.png")),
         column(width = 4,
                h2(""),
                align = "left")
@@ -588,7 +530,7 @@ ui <-div(
             "F: +225 31 63 25 78",
             br(),
             "E-mail: AfricaRice@cgiar.org"
-          ), 
+          ),
           br(),
           tags$p(
             tags$b("CIMMYT"),
@@ -604,7 +546,7 @@ ui <-div(
             "Tel: +52 55 5804 2004 or +52 595 952 1900 or +1 612 605-5205",
             br(),
             "Email: CIMMYT-Knowledge-Center@cgiar.org"
-          ), 
+          ),
           br(),
           tags$p(
             tags$b("IITA"),
@@ -616,7 +558,7 @@ ui <-div(
             "Tel: +234 700800IITA or +1 201 633-6094",
             br(),
             "Email:  iita@cgiar.org"
-          ), 
+          ),
           br(),
           br()
         )
@@ -624,5 +566,4 @@ ui <-div(
     )
   )
   
-) 
-
+)
